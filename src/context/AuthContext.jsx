@@ -30,13 +30,20 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function fetchProfile(userId) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    setProfile(data)
-    setLoading(false)
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+      if (error) console.error('fetchProfile error:', error)
+      setProfile(data ?? null)
+    } catch (err) {
+      console.error('fetchProfile unexpected error:', err)
+      setProfile(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function signUp(email, password, displayName) {
@@ -65,13 +72,18 @@ export function AuthProvider({ children }) {
   async function updateProfile(updates) {
     const { data, error } = await supabase
       .from('profiles')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', user.id)
+      .upsert(
+        { id: user.id, ...updates, updated_at: new Date().toISOString() },
+        { onConflict: 'id' }
+      )
       .select()
       .single()
     if (data) setProfile(data)
     return { data, error }
   }
+
+  // needsOnboarding: user is authenticated but has no profile row OR hasn't completed onboarding
+  const needsOnboarding = !loading && !!user && (!profile || !profile.onboarding_complete)
 
   const value = {
     user,
@@ -81,8 +93,8 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     updateProfile,
-    refreshProfile: () => fetchProfile(user?.id),
-    needsOnboarding: profile && !profile.onboarding_complete,
+    refreshProfile: () => user?.id ? fetchProfile(user.id) : null,
+    needsOnboarding,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

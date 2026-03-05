@@ -1,48 +1,114 @@
 import { getBACStatus } from '../utils/bac'
 
+const colorMap = {
+  'buzz-safe': '#10b981',
+  'buzz-primary': '#f5c842',
+  'buzz-warning': '#f97316',
+  'buzz-danger': '#ef4444',
+}
+
 export default function BACMeter({ bac }) {
-  const status = getBACStatus(bac)
-  const percentage = Math.min(bac / 0.12, 1)
-  const angle = percentage * 180
+  const safeBac = isNaN(bac) || bac == null ? 0 : bac
+  const status = getBACStatus(safeBac)
+  const percentage = Math.min(safeBac / 0.12, 1)
+  const strokeColor = colorMap[status.color] || '#10b981'
 
-  const colorMap = {
-    'buzz-safe': '#22c55e',
-    'buzz-primary': '#f59e0b',
-    'buzz-warning': '#f97316',
-    'buzz-danger': '#ef4444',
-  }
-  const strokeColor = colorMap[status.color] || '#22c55e'
-
-  const radius = 70
+  const radius = 88
   const circumference = Math.PI * radius
-  const offset = circumference - (percentage * circumference)
+  const offset = circumference - percentage * circumference
+
+  // Tick marks at 0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12
+  const ticks = [0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12]
+
+  function tickPosition(val) {
+    const t = val / 0.12
+    const angle = Math.PI + t * Math.PI // 180deg to 360deg (left to right)
+    const cx = 110, cy = 110
+    const innerR = 74, outerR = 82
+    return {
+      x1: cx + innerR * Math.cos(angle),
+      y1: cy + innerR * Math.sin(angle),
+      x2: cx + outerR * Math.cos(angle),
+      y2: cy + outerR * Math.sin(angle),
+    }
+  }
 
   return (
     <div className="flex flex-col items-center">
-      <svg width="180" height="100" viewBox="0 0 180 100">
+      <svg width="220" height="124" viewBox="0 0 220 124">
+        <defs>
+          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="50%" stopColor="#f5c842" />
+            <stop offset="100%" stopColor="#ef4444" />
+          </linearGradient>
+        </defs>
+
+        {/* Background track */}
         <path
-          d="M 10 90 A 70 70 0 0 1 170 90"
+          d={`M 22 110 A 88 88 0 0 1 198 110`}
           fill="none"
-          stroke="#1e293b"
-          strokeWidth="12"
+          stroke="var(--bg-input)"
+          strokeWidth="14"
           strokeLinecap="round"
         />
+
+        {/* Gradient track (full, clipped by dash) */}
         <path
-          d="M 10 90 A 70 70 0 0 1 170 90"
+          d={`M 22 110 A 88 88 0 0 1 198 110`}
           fill="none"
-          stroke={strokeColor}
-          strokeWidth="12"
+          stroke="url(#arcGrad)"
+          strokeWidth="14"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className="transition-all duration-500"
+          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
         />
+
+        {/* Tick marks */}
+        {ticks.map((val) => {
+          const { x1, y1, x2, y2 } = tickPosition(val)
+          return (
+            <line
+              key={val}
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke="var(--border)"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          )
+        })}
+
+        {/* Needle dot */}
+        {safeBac > 0 && (() => {
+          const angle = Math.PI + percentage * Math.PI
+          const cx = 110, cy = 110
+          const nx = cx + 88 * Math.cos(angle)
+          const ny = cy + 88 * Math.sin(angle)
+          return (
+            <circle
+              cx={nx} cy={ny} r="5"
+              fill={strokeColor}
+              style={{ transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)', filter: `drop-shadow(0 0 6px ${strokeColor})` }}
+            />
+          )
+        })()}
       </svg>
-      <div className="-mt-14 text-center">
-        <p className={`text-3xl font-bold text-${status.color}`}>
-          {bac.toFixed(3)}
+
+      {/* Value display */}
+      <div className="-mt-16 text-center pointer-events-none">
+        <p
+          className="text-4xl font-black tabular-nums leading-none"
+          style={{ color: strokeColor, textShadow: `0 0 20px ${strokeColor}40`, transition: 'color 0.4s ease' }}
+        >
+          {safeBac.toFixed(3)}
         </p>
-        <p className={`text-sm text-${status.color}`}>{status.message}</p>
+        <p
+          className="text-sm font-semibold mt-1"
+          style={{ color: strokeColor, transition: 'color 0.4s ease' }}
+        >
+          {status.message}
+        </p>
       </div>
     </div>
   )

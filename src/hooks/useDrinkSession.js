@@ -148,9 +148,12 @@ export function useDrinkSession() {
       .single()
 
     const sessionId = activeSession.id
-    setActiveSession(null)
-    setDrinkLogs([])
-    setCurrentBAC(0)
+
+    if (!error) {
+      setActiveSession(null)
+      setDrinkLogs([])
+      setCurrentBAC(0)
+    }
 
     return { data, error, sessionId }
   }

@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import { Moon, Sun, Mail, Lock, User, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Signup() {
   const { signUp, user } = useAuth()
+  const { dark, toggle } = useTheme()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [focusedField, setFocusedField] = useState(null)
 
   if (user) return <Navigate to="/dashboard" replace />
 
@@ -28,61 +32,136 @@ export default function Signup() {
     }
   }
 
+  const inputWrap = (isFocused) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '0.75rem 1rem',
+    backgroundColor: 'var(--bg-input)',
+    border: `1.5px solid ${isFocused ? '#f5c842' : 'var(--border)'}`,
+    borderRadius: '0.875rem',
+    transition: 'border-color 0.2s ease',
+    boxShadow: isFocused ? '0 0 0 3px rgba(245,200,66,0.12)' : 'none',
+  })
+
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-2">
-          <span className="text-buzz-primary">Buzz</span>Board
-        </h1>
-        <p className="text-gray-400 text-center mb-8">Create your account</p>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
+      style={{ backgroundColor: 'var(--bg)' }}
+    >
+      {/* Theme toggle */}
+      <div className="fixed top-4 right-4">
+        <button
+          onClick={toggle}
+          className="p-2.5 rounded-xl border"
+          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-card)' }}
+        >
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
-              placeholder="Your name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
-              placeholder="you@email.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
-              placeholder="Min 6 characters"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-buzz-primary text-gray-950 font-semibold rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50"
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+            style={{ background: 'linear-gradient(135deg, #f5c842, #f0a020)', boxShadow: '0 8px 24px rgba(245,200,66,0.4)' }}
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
+            <span className="text-2xl font-black" style={{ color: '#0a0c14' }}>B</span>
+          </div>
+          <h1 className="text-2xl font-black mb-1" style={{ color: 'var(--text)' }}>
+            Create account
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Join BuzzBoard — it's free
+          </p>
+        </div>
 
-        <p className="text-gray-400 text-center mt-6 text-sm">
+        {/* Card */}
+        <div
+          className="rounded-3xl border p-6"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                Display Name
+              </label>
+              <div style={inputWrap(focusedField === 'name')}>
+                <User size={16} style={{ color: focusedField === 'name' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  onFocus={() => setFocusedField('name')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  placeholder="Your name"
+                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                Email
+              </label>
+              <div style={inputWrap(focusedField === 'email')}>
+                <Mail size={16} style={{ color: focusedField === 'email' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  placeholder="you@email.com"
+                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                Password
+              </label>
+              <div style={inputWrap(focusedField === 'password')}>
+                <Lock size={16} style={{ color: focusedField === 'password' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  minLength={6}
+                  placeholder="Min 6 characters"
+                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+              style={{
+                background: 'linear-gradient(135deg, #f5c842, #f0a020)',
+                color: '#0a0c14',
+                boxShadow: '0 6px 20px rgba(245,200,66,0.35)',
+              }}
+            >
+              {loading ? 'Creating account...' : (<>Create Account <ArrowRight size={16} /></>)}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center mt-5 text-sm" style={{ color: 'var(--text-muted)' }}>
           Already have an account?{' '}
-          <Link to="/login" className="text-buzz-primary hover:underline">
+          <Link to="/login" className="font-bold" style={{ color: '#f5c842' }}>
             Log in
           </Link>
         </p>

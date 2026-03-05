@@ -41,172 +41,196 @@ export default function Onboarding() {
 
     setLoading(false)
     if (error) {
-      toast.error('Failed to save profile')
+      toast.error('Failed to save profile: ' + error.message)
     } else {
       toast.success('Profile set up!')
       navigate('/dashboard')
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-2">
-          <span className="text-buzz-primary">Buzz</span>Board
-        </h1>
-        <p className="text-gray-400 text-center mb-8">Let's personalize your experience</p>
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    backgroundColor: 'var(--bg-input)',
+    border: '1px solid var(--border)',
+    borderRadius: '0.75rem',
+    color: 'var(--text)',
+    outline: 'none',
+  }
 
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-black mb-1">
+            <span className="text-buzz-primary">Buzz</span>
+            <span style={{ color: 'var(--text)' }}>Board</span>
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Let's personalize your experience</p>
+        </div>
+
+        {/* Progress */}
         <div className="flex gap-2 mb-8 justify-center">
           {[1, 2].map((s) => (
             <div
               key={s}
-              className={`h-1.5 w-16 rounded-full ${
-                s <= step ? 'bg-buzz-primary' : 'bg-gray-700'
+              className={`h-1.5 w-20 rounded-full transition-colors ${
+                s <= step ? 'bg-buzz-primary' : ''
               }`}
+              style={s > step ? { backgroundColor: 'var(--border)' } : {}}
             />
           ))}
         </div>
 
-        {step === 1 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm text-gray-400 mb-3">Biological Gender</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['male', 'female'].map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setGender(g)}
-                    className={`py-4 rounded-lg border text-center capitalize font-medium transition-colors ${
-                      gender === g
-                        ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                        : 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
+        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          {step === 1 && (
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Biological Gender
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {['male', 'female'].map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      className={`py-3 rounded-xl border text-center capitalize font-semibold transition-all ${
+                        gender === g
+                          ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
+                          : ''
+                      }`}
+                      style={gender !== g ? { borderColor: 'var(--border)', color: 'var(--text)' } : {}}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                  Used for BAC calculation (Watson et al. 1981 body water ratios)
+                </p>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Used for BAC calculation (Widmark formula uses different body water ratios)
-              </p>
-            </div>
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Height</label>
-              <div className="flex gap-3">
-                <div className="flex-1">
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Height</label>
+                <div className="flex gap-3">
                   <input
                     type="number"
                     value={feet}
                     onChange={(e) => setFeet(e.target.value)}
-                    min="3"
-                    max="8"
+                    min="3" max="8"
                     placeholder="Feet"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
+                    style={{ ...inputStyle, width: '50%' }}
+                    onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
                   />
-                </div>
-                <div className="flex-1">
                   <input
                     type="number"
                     value={inches}
                     onChange={(e) => setInches(e.target.value)}
-                    min="0"
-                    max="11"
+                    min="0" max="11"
                     placeholder="Inches"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
+                    style={{ ...inputStyle, width: '50%' }}
+                    onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Weight (lbs)</label>
+                <input
+                  type="number"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  min="80" max="500"
+                  placeholder="Weight in pounds"
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!gender || !feet || !weight) {
+                    toast.error('Please fill in gender, height, and weight')
+                    return
+                  }
+                  setStep(2)
+                }}
+                className="w-full py-3 bg-buzz-primary text-gray-950 font-bold rounded-xl hover:bg-amber-400 transition-colors"
+              >
+                Next →
+              </button>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Weight (lbs)</label>
-              <input
-                type="number"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                min="80"
-                max="500"
-                placeholder="Weight in pounds"
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
-              />
-            </div>
+          {step === 2 && (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                  University <span className="font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={university}
+                  onChange={(e) => setUniversity(e.target.value)}
+                  placeholder="e.g. State University"
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                />
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>For leaderboard grouping</p>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                if (!gender || !feet || !weight) {
-                  toast.error('Please fill in gender, height, and weight')
-                  return
-                }
-                setStep(2)
-              }}
-              className="w-full py-3 bg-buzz-primary text-gray-950 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">University (optional)</label>
-              <input
-                type="text"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                placeholder="e.g. State University"
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
-              />
-              <p className="text-xs text-gray-500 mt-1">For leaderboard grouping</p>
-            </div>
-
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <h3 className="font-medium mb-3">Your Estimated Limits</h3>
               {feet && weight && gender && (() => {
                 const limits = calculateLimits(parseInt(weight), gender)
                 return (
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-buzz-safe">Low (feeling it)</span>
-                      <span className="font-semibold">{limits.low} drinks</span>
+                  <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border)' }}>
+                    <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--text)' }}>Your Estimated Limits</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-buzz-safe">Low (feeling it)</span>
+                        <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.low} drinks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-buzz-primary">Medium (buzzed)</span>
+                        <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.med} drinks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-buzz-danger">High (legal limit)</span>
+                        <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.high} drinks</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-buzz-primary">Medium (buzzed)</span>
-                      <span className="font-semibold">{limits.med} drinks</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-buzz-danger">High (legal limit)</span>
-                      <span className="font-semibold">{limits.high} drinks</span>
-                    </div>
+                    <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                      Fine-tuned over your first 3 sessions
+                    </p>
                   </div>
                 )
               })()}
-              <p className="text-xs text-gray-500 mt-3">
-                These will be fine-tuned over your first 3 sessions
-              </p>
-            </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="flex-1 py-3 border border-gray-600 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-3 bg-buzz-primary text-gray-950 font-semibold rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50"
-              >
-                {loading ? 'Saving...' : 'Complete Setup'}
-              </button>
-            </div>
-          </form>
-        )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="flex-1 py-3 rounded-xl border font-semibold transition-colors"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-3 bg-buzz-primary text-gray-950 font-bold rounded-xl hover:bg-amber-400 transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Saving...' : 'Complete Setup'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   )

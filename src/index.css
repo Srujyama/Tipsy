@@ -1,11 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  --color-buzz-primary: #f59e0b;
-  --color-buzz-dark: #1e1b4b;
+  --color-buzz-primary: #f5c842;
+  --color-buzz-blue: #3b82f6;
+  --color-buzz-purple: #8b5cf6;
+  --color-buzz-dark: #0a0c14;
   --color-buzz-danger: #ef4444;
-  --color-buzz-safe: #22c55e;
+  --color-buzz-safe: #10b981;
   --color-buzz-warning: #f97316;
-  --color-buzz-surface: #1e293b;
-  --color-buzz-muted: #94a3b8;
+  --color-buzz-muted: #64748b;
+}
+
+/* Light mode base */
+:root {
+  --bg: #f0f2f8;
+  --bg-card: #ffffff;
+  --bg-input: #e8ecf4;
+  --border: #d0d7e8;
+  --text: #0d1117;
+  --text-muted: #64748b;
+}
+
+/* Dark mode overrides */
+.dark {
+  --bg: #0a0c14;
+  --bg-card: #111827;
+  --bg-input: #1a2035;
+  --border: #1f2d4a;
+  --text: #e8eaf0;
+  --text-muted: #6b7280;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Floating glass navbar utility */
+.glass-nav {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass-nav {
+  background: rgba(10, 12, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Light mode glass nav */
+:root:not(.dark) .glass-nav {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Smooth transitions on interactive elements */
+button, a {
+  transition: all 0.15s ease;
 }

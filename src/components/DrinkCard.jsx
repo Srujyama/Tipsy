@@ -13,11 +13,22 @@ export default function DrinkCard({ drinkType, label, standardDrinks, onLog, dis
     <button
       onClick={() => onLog(drinkType)}
       disabled={disabled}
-      className="flex flex-col items-center justify-center gap-2 p-5 bg-gray-900 border border-gray-700 rounded-xl hover:border-buzz-primary hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none min-h-[100px]"
+      className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none min-h-[100px]"
+      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = '#f59e0b'
+        e.currentTarget.style.backgroundColor = 'var(--bg-input)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border)'
+        e.currentTarget.style.backgroundColor = 'var(--bg-card)'
+      }}
     >
-      <Icon size={32} className="text-buzz-primary" />
-      <span className="font-medium text-sm">{label}</span>
-      <span className="text-xs text-gray-400">{standardDrinks} std drink{standardDrinks !== 1 ? 's' : ''}</span>
+      <Icon size={28} className="text-buzz-primary" />
+      <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{label}</span>
+      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        {standardDrinks} std{standardDrinks !== 1 ? '' : ''}
+      </span>
     </button>
   )
 }

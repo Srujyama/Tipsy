@@ -27,7 +27,6 @@ export default function CalibrationSurvey() {
 
     setLoading(true)
 
-    // Insert calibration session
     const { error: calError } = await supabase
       .from('calibration_sessions')
       .insert({
@@ -47,11 +46,8 @@ export default function CalibrationSurvey() {
     const newCount = sessionNumber
     const updates = { calibration_count: newCount }
 
-    // After 3rd session, recalculate limits with calibration data
     if (newCount >= 3) {
       const baseLimits = calculateLimits(profile.weight_lbs, profile.biological_gender)
-
-      // Fetch all 3 calibration sessions
       const { data: sessions } = await supabase
         .from('calibration_sessions')
         .select('*')
@@ -68,10 +64,7 @@ export default function CalibrationSurvey() {
 
         updates.calculated_low_limit = Math.max(1, baseLimits.low + adjustment)
         updates.calculated_med_limit = Math.max(2, baseLimits.med + adjustment)
-        updates.calculated_high_limit = Math.min(
-          baseLimits.high + adjustment,
-          baseLimits.high
-        )
+        updates.calculated_high_limit = Math.min(baseLimits.high + adjustment, baseLimits.high)
       }
     }
 
@@ -94,32 +87,57 @@ export default function CalibrationSurvey() {
   ]
 
   return (
-    <div className="pb-20 px-4 pt-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Calibration Survey</h1>
-      <p className="text-gray-400 text-sm mb-6">
+    <div className="pb-24 px-4 pt-6 max-w-lg mx-auto">
+      <h1 className="text-2xl font-black mb-1" style={{ color: 'var(--text)' }}>Calibration Survey</h1>
+      <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
         Session {sessionNumber} of 3 — Help us fine-tune your limits
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Progress */}
+      <div className="flex gap-2 mb-8">
+        {[0,1,2].map((i) => (
+          <div
+            key={i}
+            className={`h-1.5 flex-1 rounded-full ${i < sessionNumber ? 'bg-buzz-primary' : ''}`}
+            style={i >= sessionNumber ? { backgroundColor: 'var(--border)' } : {}}
+          />
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Drinks Consumed */}
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">
+        <div
+          className="rounded-2xl border p-4"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <label className="block text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
             How many drinks did you have tonight?
           </label>
           <input
             type="number"
             value={drinksConsumed}
             onChange={(e) => setDrinksConsumed(e.target.value)}
-            min="0"
-            max="30"
+            min="0" max="30"
             required
-            className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-buzz-primary text-white"
+            placeholder="0"
+            className="w-full px-4 py-3 rounded-xl font-bold text-center text-lg"
+            style={{
+              backgroundColor: 'var(--bg-input)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
+              outline: 'none',
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+            onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
           />
         </div>
 
         {/* Feeling Rating */}
-        <div>
-          <label className="block text-sm text-gray-400 mb-3">
+        <div
+          className="rounded-2xl border p-4"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <label className="block text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
             How did you feel overall?
           </label>
           <div className="flex gap-2">
@@ -128,11 +146,12 @@ export default function CalibrationSurvey() {
                 key={value}
                 type="button"
                 onClick={() => setFeelingRating(value)}
-                className={`flex-1 py-3 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 py-3 rounded-xl text-xs font-semibold border transition-all ${
                   feelingRating === value
                     ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                    : 'border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-500'
+                    : ''
                 }`}
+                style={feelingRating !== value ? { borderColor: 'var(--border)', color: 'var(--text-muted)' } : {}}
               >
                 {label}
               </button>
@@ -141,8 +160,11 @@ export default function CalibrationSurvey() {
         </div>
 
         {/* Could Handle More */}
-        <div>
-          <label className="block text-sm text-gray-400 mb-3">
+        <div
+          className="rounded-2xl border p-4"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <label className="block text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
             Could you have handled more drinks?
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -151,11 +173,12 @@ export default function CalibrationSurvey() {
                 key={String(val)}
                 type="button"
                 onClick={() => setCouldHandleMore(val)}
-                className={`py-3 rounded-lg border font-medium transition-colors ${
+                className={`py-3 rounded-xl border font-semibold transition-all ${
                   couldHandleMore === val
                     ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                    : 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500'
+                    : ''
                 }`}
+                style={couldHandleMore !== val ? { borderColor: 'var(--border)', color: 'var(--text)' } : {}}
               >
                 {val ? 'Yes' : 'No'}
               </button>
@@ -166,7 +189,7 @@ export default function CalibrationSurvey() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-buzz-primary text-gray-950 font-semibold rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50"
+          className="w-full py-4 bg-buzz-primary text-gray-950 font-bold rounded-2xl hover:bg-amber-400 transition-colors disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Submit'}
         </button>
