@@ -87,19 +87,19 @@ export default function CalibrationSurvey() {
   ]
 
   return (
-    <div className="pb-24 px-4 pt-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-black mb-1" style={{ color: 'var(--text)' }}>Calibration Survey</h1>
+    <div className="pb-24 px-4 pt-6 max-w-lg mx-auto" style={{ backgroundColor: 'var(--bg)', minHeight: '100vh' }}>
+      <h1 className="text-2xl font-black mb-1" style={{ color: 'var(--text)' }}>Calibration</h1>
       <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
         Session {sessionNumber} of 3 — Help us fine-tune your limits
       </p>
 
       {/* Progress */}
       <div className="flex gap-2 mb-8">
-        {[0,1,2].map((i) => (
+        {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className={`h-1.5 flex-1 rounded-full ${i < sessionNumber ? 'bg-buzz-primary' : ''}`}
-            style={i >= sessionNumber ? { backgroundColor: 'var(--border)' } : {}}
+            className="h-1.5 flex-1 rounded-full"
+            style={{ backgroundColor: i < sessionNumber ? '#f59e0b' : 'var(--border)' }}
           />
         ))}
       </div>
@@ -146,12 +146,12 @@ export default function CalibrationSurvey() {
                 key={value}
                 type="button"
                 onClick={() => setFeelingRating(value)}
-                className={`flex-1 py-3 rounded-xl text-xs font-semibold border transition-all ${
+                className="flex-1 py-3 rounded-xl text-xs font-semibold border transition-all"
+                style={
                   feelingRating === value
-                    ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                    : ''
-                }`}
-                style={feelingRating !== value ? { borderColor: 'var(--border)', color: 'var(--text-muted)' } : {}}
+                    ? { backgroundColor: 'rgba(245,158,11,0.12)', borderColor: '#f59e0b', color: '#f59e0b' }
+                    : { borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-input)' }
+                }
               >
                 {label}
               </button>
@@ -173,12 +173,12 @@ export default function CalibrationSurvey() {
                 key={String(val)}
                 type="button"
                 onClick={() => setCouldHandleMore(val)}
-                className={`py-3 rounded-xl border font-semibold transition-all ${
+                className="py-3 rounded-xl border font-semibold text-sm transition-all"
+                style={
                   couldHandleMore === val
-                    ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                    : ''
-                }`}
-                style={couldHandleMore !== val ? { borderColor: 'var(--border)', color: 'var(--text)' } : {}}
+                    ? { backgroundColor: 'rgba(245,158,11,0.12)', borderColor: '#f59e0b', color: '#f59e0b' }
+                    : { borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-input)' }
+                }
               >
                 {val ? 'Yes' : 'No'}
               </button>
@@ -189,7 +189,8 @@ export default function CalibrationSurvey() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-buzz-primary text-gray-950 font-bold rounded-2xl hover:bg-amber-400 transition-colors disabled:opacity-50"
+          className="w-full py-4 font-bold rounded-2xl disabled:opacity-50 text-sm"
+          style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
         >
           {loading ? 'Saving...' : 'Submit'}
         </button>

@@ -3,10 +3,9 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { Trophy, Wine, GraduationCap, Users, Info } from 'lucide-react'
 
-const podiumColors = ['#f5c842', '#94a3b8', '#cd7c3b']
-const podiumEmoji = ['🥇', '🥈', '🥉']
+const podiumColors = ['#f59e0b', '#94a3b8', '#cd7c3b']
+const podiumEmoji = ['1st', '2nd', '3rd']
 
-// Night window: 6 PM (18) through 6 AM next day
 function isNightSession(startedAt) {
   if (!startedAt) return false
   const d = new Date(startedAt)
@@ -32,7 +31,7 @@ function PodiumCard({ rank, entry, isYou }) {
       }}
     >
       <div className="py-3" style={{ background: `${color}18` }}>
-        <span className="text-2xl">{podiumEmoji[rank - 1]}</span>
+        <span className="text-lg font-black" style={{ color }}>{podiumEmoji[rank - 1]}</span>
       </div>
       <div className="px-3 py-3">
         <p className="font-black text-sm truncate" style={{ color: 'var(--text)' }}>
@@ -50,21 +49,21 @@ function RankRow({ rank, entry, isYou }) {
     <div
       className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border"
       style={{
-        backgroundColor: isYou ? 'rgba(245,200,66,0.06)' : 'var(--bg-card)',
-        borderColor: isYou ? 'rgba(245,200,66,0.3)' : 'var(--border)',
+        backgroundColor: isYou ? 'rgba(245,158,11,0.06)' : 'var(--bg-card)',
+        borderColor: isYou ? 'rgba(245,158,11,0.3)' : 'var(--border)',
       }}
     >
       <span className="w-7 text-center font-black text-sm shrink-0" style={{ color: 'var(--text-muted)' }}>
         {rank}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm truncate" style={{ color: isYou ? '#f5c842' : 'var(--text)' }}>
+        <p className="font-bold text-sm truncate" style={{ color: isYou ? '#f59e0b' : 'var(--text)' }}>
           {entry.display_name}{isYou ? ' · You' : ''}
         </p>
       </div>
       <div className="shrink-0 flex items-center gap-1">
-        <Wine size={13} style={{ color: isYou ? '#f5c842' : 'var(--text-muted)' }} />
-        <span className="font-black text-base" style={{ color: isYou ? '#f5c842' : 'var(--text)' }}>
+        <Wine size={13} style={{ color: isYou ? '#f59e0b' : 'var(--text-muted)' }} />
+        <span className="font-black text-base" style={{ color: isYou ? '#f59e0b' : 'var(--text)' }}>
           {entry.drinks}
         </span>
       </div>
@@ -82,7 +81,6 @@ export default function Leaderboard() {
   const [loadingGroups, setLoadingGroups] = useState(true)
   const [showInfo, setShowInfo] = useState(false)
 
-  // Load groups once on mount (independent of tab)
   useEffect(() => {
     async function fetchGroups() {
       setLoadingGroups(true)
@@ -93,7 +91,6 @@ export default function Leaderboard() {
       if (!error) {
         const gs = data?.map((d) => d.friend_groups) || []
         setGroups(gs)
-        // Auto-select the first group if we have one and no selection yet
         if (gs.length > 0 && !selectedGroup) {
           setSelectedGroup(gs[0].id)
         }
@@ -103,7 +100,6 @@ export default function Leaderboard() {
     fetchGroups()
   }, [user.id])
 
-  // Reload leaderboard whenever tab, selectedGroup, or profile changes
   const loadLeaderboard = useCallback(async () => {
     setLoadingBoard(true)
     setEntries([])
@@ -181,18 +177,22 @@ export default function Leaderboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245,200,66,0.15)' }}>
-              <Trophy size={20} style={{ color: '#f5c842' }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.12)' }}>
+              <Trophy size={20} style={{ color: '#f59e0b' }} />
             </div>
             <div>
-              <h1 className="text-2xl font-black" style={{ color: 'var(--text)' }}>Leaderboard</h1>
+              <h1 className="text-2xl font-black" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>Leaderboard</h1>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Best single night · 6 PM – 6 AM</p>
             </div>
           </div>
           <button
             onClick={() => setShowInfo((v) => !v)}
             className="p-2 rounded-xl"
-            style={{ color: showInfo ? '#f5c842' : 'var(--text-muted)', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+            style={{
+              color: showInfo ? '#f59e0b' : 'var(--text-muted)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+            }}
           >
             <Info size={16} />
           </button>
@@ -202,11 +202,11 @@ export default function Leaderboard() {
         {showInfo && (
           <div
             className="rounded-2xl p-4 mb-5 text-xs leading-relaxed space-y-1.5"
-            style={{ backgroundColor: 'rgba(245,200,66,0.08)', border: '1px solid rgba(245,200,66,0.25)', color: 'var(--text-muted)' }}
+            style={{ backgroundColor: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', color: 'var(--text-muted)' }}
           >
-            <p>🏆 <strong style={{ color: 'var(--text)' }}>Ranking:</strong> highest single-night drink total across all your past nights (6 PM–6 AM window).</p>
-            <p>🎓 <strong style={{ color: 'var(--text)' }}>University:</strong> anyone at your school who opted in.</p>
-            <p>👥 <strong style={{ color: 'var(--text)' }}>Group:</strong> only people in the selected group — private and invite-only.</p>
+            <p><strong style={{ color: 'var(--text)' }}>Ranking:</strong> highest single-night drink total across all your past nights (6 PM–6 AM window).</p>
+            <p><strong style={{ color: 'var(--text)' }}>University:</strong> anyone at your school who opted in.</p>
+            <p><strong style={{ color: 'var(--text)' }}>Group:</strong> only people in the selected group — private and invite-only.</p>
           </div>
         )}
 
@@ -216,8 +216,8 @@ export default function Leaderboard() {
           style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
         >
           {[
-            { id: 'university', label: '🎓 University', icon: GraduationCap },
-            { id: 'group', label: '👥 Group', icon: Users },
+            { id: 'university', label: 'University' },
+            { id: 'group', label: 'Group' },
           ].map(({ id, label }) => (
             <button
               key={id}
@@ -225,7 +225,7 @@ export default function Leaderboard() {
               className="flex-1 py-2.5 rounded-xl text-sm font-bold"
               style={
                 tab === id
-                  ? { background: 'linear-gradient(135deg, #f5c842, #f0a020)', color: '#0a0c14' }
+                  ? { backgroundColor: '#f59e0b', color: '#09090b' }
                   : { color: 'var(--text-muted)' }
               }
             >
@@ -249,7 +249,7 @@ export default function Leaderboard() {
             <button
               onClick={() => updateProfile({ show_on_leaderboard: !profile?.show_on_leaderboard })}
               className="w-12 h-6 rounded-full relative shrink-0 ml-4"
-              style={{ backgroundColor: profile?.show_on_leaderboard ? '#f5c842' : 'var(--border)', transition: 'background 0.2s' }}
+              style={{ backgroundColor: profile?.show_on_leaderboard ? '#f59e0b' : 'var(--border)', transition: 'background 0.2s' }}
             >
               <div
                 className="w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-sm"
@@ -262,28 +262,26 @@ export default function Leaderboard() {
         {/* Group tab controls */}
         {tab === 'group' && (
           <div className="mb-5 space-y-3">
-            {/* Privacy note */}
             <div
               className="px-4 py-3 rounded-2xl border flex items-start gap-2.5"
               style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
             >
               <Users size={14} style={{ color: '#8b5cf6', marginTop: 2, flexShrink: 0 }} />
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                Group leaderboards are <strong style={{ color: 'var(--text)' }}>private</strong> — only members of the group can see this ranking. Your "Show my name" setting doesn't apply here.
+                Group leaderboards are <strong style={{ color: 'var(--text)' }}>private</strong> — only members of the group can see this ranking.
               </p>
             </div>
 
-            {/* Group picker */}
             {loadingGroups ? (
               <div className="flex items-center justify-center py-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent" style={{ borderColor: '#f5c842', borderTopColor: 'transparent' }} />
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
               </div>
             ) : groups.length === 0 ? (
               <div
                 className="px-4 py-3.5 rounded-2xl border text-sm text-center"
                 style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
               >
-                You're not in any groups yet. Create or join one in <strong style={{ color: 'var(--text)' }}>Social → Groups</strong>.
+                You're not in any groups yet. Create or join one in <strong style={{ color: 'var(--text)' }}>Social &gt; Groups</strong>.
               </div>
             ) : (
               <div className="flex flex-col gap-2">
@@ -310,7 +308,7 @@ export default function Leaderboard() {
                       </span>
                     </div>
                     {selectedGroup === g.id && (
-                      <div className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#8b5cf6' }} />
                     )}
                   </button>
                 ))}
@@ -322,15 +320,15 @@ export default function Leaderboard() {
         {/* Leaderboard content */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: '#f5c842', borderTopColor: 'transparent' }} />
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
           </div>
         ) : entries.length === 0 ? (
           <div className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>
             {tab === 'university' && !profile?.university_name
-              ? '🎓 Set your university in Profile to see rankings.'
+              ? 'Set your university in Profile to see rankings.'
               : tab === 'group' && !selectedGroup
-              ? '👥 Select a group above to see rankings.'
-              : '🏁 No night sessions yet — be the first!'}
+              ? 'Select a group above to see rankings.'
+              : 'No night sessions yet — be the first!'}
           </div>
         ) : (
           <>
@@ -356,7 +354,7 @@ export default function Leaderboard() {
         )}
 
         <p className="text-xs text-center mt-6 pb-2" style={{ color: 'var(--text-muted)' }}>
-          🍺 Best single night · 6 PM – 6 AM · Drink responsibly
+          Best single night · 6 PM – 6 AM · Drink responsibly
         </p>
       </div>
     </div>

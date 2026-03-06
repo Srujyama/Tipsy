@@ -57,16 +57,16 @@ export default function Onboarding() {
     borderRadius: '0.75rem',
     color: 'var(--text)',
     outline: 'none',
+    fontSize: '0.875rem',
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black mb-1">
-            <span className="text-buzz-primary">Buzz</span>
-            <span style={{ color: 'var(--text)' }}>Board</span>
-          </h1>
+          <p className="text-3xl font-black mb-1 tracking-tight" style={{ color: '#f59e0b', letterSpacing: '-0.04em' }}>
+            tipsy
+          </p>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Let's personalize your experience</p>
         </div>
 
@@ -75,10 +75,8 @@ export default function Onboarding() {
           {[1, 2].map((s) => (
             <div
               key={s}
-              className={`h-1.5 w-20 rounded-full transition-colors ${
-                s <= step ? 'bg-buzz-primary' : ''
-              }`}
-              style={s > step ? { backgroundColor: 'var(--border)' } : {}}
+              className="h-1.5 w-20 rounded-full transition-colors"
+              style={{ backgroundColor: s <= step ? '#f59e0b' : 'var(--border)' }}
             />
           ))}
         </div>
@@ -96,12 +94,12 @@ export default function Onboarding() {
                       key={g}
                       type="button"
                       onClick={() => setGender(g)}
-                      className={`py-3 rounded-xl border text-center capitalize font-semibold transition-all ${
+                      className="py-3 rounded-xl border text-center capitalize font-semibold transition-all text-sm"
+                      style={
                         gender === g
-                          ? 'border-buzz-primary bg-buzz-primary/10 text-buzz-primary'
-                          : ''
-                      }`}
-                      style={gender !== g ? { borderColor: 'var(--border)', color: 'var(--text)' } : {}}
+                          ? { backgroundColor: 'rgba(245,158,11,0.12)', borderColor: '#f59e0b', color: '#f59e0b' }
+                          : { borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-input)' }
+                      }
                     >
                       {g}
                     </button>
@@ -161,9 +159,10 @@ export default function Onboarding() {
                   }
                   setStep(2)
                 }}
-                className="w-full py-3 bg-buzz-primary text-gray-950 font-bold rounded-xl hover:bg-amber-400 transition-colors"
+                className="w-full py-3 font-bold rounded-xl text-sm"
+                style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
               >
-                Next →
+                Next
               </button>
             </div>
           )}
@@ -178,7 +177,7 @@ export default function Onboarding() {
                   value={university}
                   onChange={setUniversity}
                   inputStyle={inputStyle}
-                  placeholder="Search your university…"
+                  placeholder="Search your university..."
                 />
                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>For leaderboard grouping</p>
               </div>
@@ -190,15 +189,15 @@ export default function Onboarding() {
                     <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--text)' }}>Your Estimated Limits</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-buzz-safe">Low (feeling it)</span>
+                        <span style={{ color: '#10b981' }}>Low (feeling it)</span>
                         <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.low} drinks</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-buzz-primary">Medium (buzzed)</span>
+                        <span style={{ color: '#f59e0b' }}>Medium (buzzed)</span>
                         <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.med} drinks</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-buzz-danger">High (legal limit)</span>
+                        <span style={{ color: '#ef4444' }}>High (legal limit)</span>
                         <span className="font-bold" style={{ color: 'var(--text)' }}>{limits.high} drinks</span>
                       </div>
                     </div>
@@ -213,15 +212,16 @@ export default function Onboarding() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 rounded-xl border font-semibold transition-colors"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                  className="flex-1 py-3 rounded-xl border font-semibold text-sm transition-colors"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-input)' }}
                 >
-                  ← Back
+                  Back
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-3 bg-buzz-primary text-gray-950 font-bold rounded-xl hover:bg-amber-400 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3 font-bold rounded-xl text-sm disabled:opacity-50"
+                  style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
                 >
                   {loading ? 'Saving...' : 'Complete Setup'}
                 </button>

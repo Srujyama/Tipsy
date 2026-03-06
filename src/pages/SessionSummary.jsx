@@ -6,7 +6,7 @@ import { predictHangover, getHangoverColor } from '../utils/hangover'
 import { Clock, Wine, TrendingUp, Droplets, ChevronRight, CheckCircle } from 'lucide-react'
 
 const drinkColors = {
-  shot: '#f5c842',
+  shot: '#f59e0b',
   beer: '#f97316',
   mixed: '#3b82f6',
 }
@@ -34,7 +34,7 @@ export default function SessionSummary() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent" style={{ borderColor: '#f5c842', borderTopColor: 'transparent' }} />
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -43,7 +43,7 @@ export default function SessionSummary() {
     return (
       <div className="pb-24 px-4 pt-6 max-w-lg mx-auto text-center">
         <p style={{ color: 'var(--text-muted)' }}>Session not found.</p>
-        <Link to="/dashboard" className="font-semibold mt-4 inline-block" style={{ color: '#f5c842' }}>Back to Dashboard</Link>
+        <Link to="/dashboard" className="font-semibold mt-4 inline-block" style={{ color: '#f59e0b' }}>Back to Dashboard</Link>
       </div>
     )
   }
@@ -64,11 +64,13 @@ export default function SessionSummary() {
   const highLimit = profile?.calculated_high_limit || 4
   const stayedUnderLimit = totalDrinks <= highLimit
 
+  const bacColor = peakBAC >= 0.08 ? '#ef4444' : peakBAC >= 0.05 ? '#f97316' : '#f59e0b'
+
   const stats = [
-    { icon: Wine, value: totalDrinks, label: 'Drinks', color: '#f5c842', bg: 'rgba(245,200,66,0.12)' },
-    { icon: TrendingUp, value: peakBAC.toFixed(3), label: 'Peak BAC', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
-    { icon: Clock, value: `${durationHours.toFixed(1)}h`, label: 'Duration', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-    { icon: Droplets, value: logs.length, label: 'Logged', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+    { icon: Wine, value: totalDrinks, label: 'Drinks', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+    { icon: TrendingUp, value: peakBAC.toFixed(3), label: 'Peak BAC', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+    { icon: Clock, value: `${durationHours.toFixed(1)}h`, label: 'Duration', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+    { icon: Droplets, value: logs.length, label: 'Logged', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
   ]
 
   return (
@@ -79,31 +81,25 @@ export default function SessionSummary() {
         <div
           className="rounded-3xl p-6 mb-5 text-center border"
           style={{
-            background: stayedUnderLimit
-              ? 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))'
-              : 'linear-gradient(135deg, rgba(245,200,66,0.12), rgba(245,200,66,0.04))',
-            borderColor: stayedUnderLimit ? 'rgba(16,185,129,0.3)' : 'rgba(245,200,66,0.25)',
+            backgroundColor: stayedUnderLimit ? 'rgba(16,185,129,0.06)' : 'var(--bg-card)',
+            borderColor: stayedUnderLimit ? 'rgba(16,185,129,0.2)' : 'var(--border)',
           }}
         >
-          {stayedUnderLimit ? (
+          {stayedUnderLimit && (
             <div className="flex items-center justify-center gap-2 mb-2">
-              <CheckCircle size={20} style={{ color: '#10b981' }} />
-              <span className="font-bold text-sm" style={{ color: '#10b981' }}>Stayed within your limit!</span>
+              <CheckCircle size={16} style={{ color: '#10b981' }} />
+              <span className="font-bold text-xs" style={{ color: '#10b981' }}>Stayed within your limit</span>
             </div>
-          ) : null}
-          <h1 className="text-3xl font-black mb-0.5" style={{ color: 'var(--text)' }}>Night Recap</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          )}
+          <h1 className="text-2xl font-black mb-0.5" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>Night Recap</h1>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {startTime.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
           </p>
 
-          {/* Hero BAC */}
           <div className="mt-5">
             <p
               className="text-6xl font-black tabular-nums"
-              style={{
-                color: peakBAC >= 0.08 ? '#ef4444' : peakBAC >= 0.05 ? '#f97316' : '#f5c842',
-                textShadow: `0 0 30px ${peakBAC >= 0.08 ? 'rgba(239,68,68,0.4)' : peakBAC >= 0.05 ? 'rgba(249,115,22,0.4)' : 'rgba(245,200,66,0.4)'}`,
-              }}
+              style={{ color: bacColor, letterSpacing: '-0.04em' }}
             >
               {peakBAC.toFixed(3)}
             </p>
@@ -113,7 +109,7 @@ export default function SessionSummary() {
           </div>
         </div>
 
-        {/* Stats 2×2 grid */}
+        {/* Stats 2x2 grid */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           {stats.map(({ icon: Icon, value, label, color, bg }) => (
             <div
@@ -127,7 +123,7 @@ export default function SessionSummary() {
               >
                 <Icon size={18} style={{ color }} />
               </div>
-              <p className="text-2xl font-black" style={{ color: 'var(--text)' }}>{value}</p>
+              <p className="text-2xl font-black" style={{ color: 'var(--text)', letterSpacing: '-0.02em' }}>{value}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
             </div>
           ))}
@@ -151,10 +147,10 @@ export default function SessionSummary() {
                 style={{ borderColor: 'var(--border)' }}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: drinkColors[type] || '#f5c842' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: drinkColors[type] || '#f59e0b' }} />
                   <span className="capitalize font-semibold text-sm" style={{ color: 'var(--text)' }}>{type}</span>
                 </div>
-                <span className="font-black text-sm" style={{ color: drinkColors[type] || '#f5c842' }}>{count}</span>
+                <span className="font-black text-sm" style={{ color: drinkColors[type] || '#f59e0b' }}>{count}</span>
               </div>
             ))}
           </div>
@@ -170,7 +166,7 @@ export default function SessionSummary() {
               Morning Forecast
             </p>
             <p className={`font-bold text-base mb-1 ${getHangoverColor(hangover.severity)}`}>
-              {hangover.severity === 'none' ? '✅ Feeling Good' : `⚠️ ${hangover.severity} hangover expected`}
+              {hangover.severity === 'none' ? 'Feeling Good' : `${hangover.severity} hangover expected`}
             </p>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{hangover.message}</p>
           </div>
@@ -179,9 +175,9 @@ export default function SessionSummary() {
         {/* Responsible drinking */}
         <div
           className="rounded-2xl p-4 text-center mb-5"
-          style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}
+          style={{ backgroundColor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}
         >
-          <p className="font-bold text-sm mb-1" style={{ color: '#f97316' }}>Drink Responsibly</p>
+          <p className="font-bold text-sm mb-1" style={{ color: '#f59e0b' }}>Drink Responsibly</p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Hydrate, eat, and never drink and drive. Need help? Call SAMHSA at 1-800-662-4357.
           </p>
@@ -190,11 +186,7 @@ export default function SessionSummary() {
         <Link
           to="/dashboard"
           className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-sm"
-          style={{
-            background: 'linear-gradient(135deg, #f5c842, #f0a020)',
-            color: '#0a0c14',
-            boxShadow: '0 6px 20px rgba(245,200,66,0.3)',
-          }}
+          style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
         >
           Back to Dashboard <ChevronRight size={16} />
         </Link>

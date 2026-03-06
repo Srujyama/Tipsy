@@ -16,9 +16,8 @@ export default function Social() {
   const [searchResults, setSearchResults] = useState([])
   const [loading, setLoading] = useState(true)
   const [newGroupName, setNewGroupName] = useState('')
-  // Group management state
   const [expandedGroup, setExpandedGroup] = useState(null)
-  const [groupMembers, setGroupMembers] = useState({}) // groupId → [{user_id, display_name}]
+  const [groupMembers, setGroupMembers] = useState({})
   const [loadingMembers, setLoadingMembers] = useState({})
 
   useEffect(() => {
@@ -29,7 +28,7 @@ export default function Social() {
         event: 'INSERT', schema: 'public', table: 'friend_alerts',
         filter: `friend_id=eq.${user.id}`,
       }, (payload) => {
-        toast(payload.new.message, { icon: '⚠️', duration: 5000 })
+        toast(payload.new.message, { icon: 'warning', duration: 5000 })
         setAlerts((prev) => [payload.new, ...prev])
       })
       .subscribe()
@@ -56,7 +55,6 @@ export default function Social() {
       return { ...friendProfile, friendship_id: f.id, can_see_drinks: f.can_see_drinks }
     })
 
-    // After 6 PM, fetch active session drink totals for friends who allow visibility
     const hour = new Date().getHours()
     const isNightTime = hour >= 18 || hour < 6
     const visibleFriendIds = friendList.filter((f) => f.can_see_drinks).map((f) => f.id)
@@ -129,14 +127,13 @@ export default function Social() {
     } else {
       toast.success('Group created!')
       setNewGroupName('')
-      // Auto-add creator as a member
       await supabase.from('friend_group_members').insert({ group_id: data.id, user_id: user.id })
       loadData()
     }
   }
 
   async function loadGroupMembers(groupId) {
-    if (groupMembers[groupId]) return // cached
+    if (groupMembers[groupId]) return
     setLoadingMembers((prev) => ({ ...prev, [groupId]: true }))
     const { data } = await supabase
       .from('friend_group_members')
@@ -159,7 +156,6 @@ export default function Social() {
   }
 
   async function addMemberToGroup(groupId, friendId) {
-    // Check if already a member
     const existing = (groupMembers[groupId] || []).find((m) => m.user_id === friendId)
     if (existing) { toast.error('Already in this group'); return }
     const { error } = await supabase.from('friend_group_members').insert({ group_id: groupId, user_id: friendId })
@@ -167,10 +163,8 @@ export default function Social() {
       toast.error(error.message.includes('duplicate') ? 'Already in group' : 'Failed to add member')
     } else {
       toast.success('Member added!')
-      // Refresh members for this group
       setGroupMembers((prev) => ({ ...prev, [groupId]: undefined }))
       await loadGroupMembers(groupId)
-      // Refresh group list to update counts
       const { data } = await supabase.from('friend_groups')
         .select('*, friend_group_members(user_id)').eq('creator_id', user.id)
       setGroups(data || [])
@@ -212,7 +206,7 @@ export default function Social() {
 
   return (
     <div className="pb-24 px-4 pt-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-black mb-6" style={{ color: 'var(--text)' }}>Social</h1>
+      <h1 className="text-2xl font-black mb-6" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>Social</h1>
 
       {/* Tabs */}
       <div
@@ -223,14 +217,19 @@ export default function Social() {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold transition-colors relative ${
-              tab === id ? 'bg-buzz-primary text-gray-950' : ''
-            }`}
-            style={tab !== id ? { color: 'var(--text-muted)' } : {}}
+            className="flex-1 py-2 px-2 rounded-xl text-xs font-semibold transition-colors relative"
+            style={
+              tab === id
+                ? { backgroundColor: '#f59e0b', color: '#09090b' }
+                : { color: 'var(--text-muted)' }
+            }
           >
             {label}
             {badge > 0 && (
-              <span className="absolute -top-1 -right-1 bg-buzz-danger text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              <span
+                className="absolute -top-1 -right-1 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+                style={{ backgroundColor: '#ef4444' }}
+              >
                 {badge}
               </span>
             )}
@@ -255,7 +254,11 @@ export default function Social() {
                   onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
                 />
-                <button onClick={handleSearch} className="px-3 py-2 bg-buzz-primary text-gray-950 rounded-xl font-bold">
+                <button
+                  onClick={handleSearch}
+                  className="px-3 py-2 rounded-xl font-bold"
+                  style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
+                >
                   <Search size={16} />
                 </button>
               </div>
@@ -270,8 +273,11 @@ export default function Social() {
                       style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
                     >
                       <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{result.display_name}</span>
-                      <button onClick={() => sendFriendRequest(result.id)}
-                        className="text-xs px-3 py-1.5 bg-buzz-primary text-gray-950 rounded-lg font-bold">
+                      <button
+                        onClick={() => sendFriendRequest(result.id)}
+                        className="text-xs px-3 py-1.5 rounded-lg font-bold"
+                        style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
+                      >
                         Add
                       </button>
                     </div>
@@ -303,8 +309,11 @@ export default function Social() {
                   <div key={req.id} className="flex items-center justify-between p-3 rounded-xl border"
                     style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                     <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{req.requester?.display_name}</span>
-                    <button onClick={() => acceptRequest(req.id)}
-                      className="text-xs px-3 py-1.5 bg-buzz-safe text-white rounded-lg font-bold">
+                    <button
+                      onClick={() => acceptRequest(req.id)}
+                      className="text-xs px-3 py-1.5 rounded-lg font-bold"
+                      style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                    >
                       Accept
                     </button>
                   </div>
@@ -316,7 +325,6 @@ export default function Social() {
           {/* Groups Tab */}
           {tab === 'groups' && (
             <div>
-              {/* Create group */}
               <div className="flex gap-2 mb-5">
                 <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && createGroup()}
@@ -325,7 +333,11 @@ export default function Social() {
                   onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
                 />
-                <button onClick={createGroup} className="px-4 py-2 bg-buzz-primary text-gray-950 rounded-xl text-sm font-bold">
+                <button
+                  onClick={createGroup}
+                  className="px-4 py-2 rounded-xl text-sm font-bold"
+                  style={{ backgroundColor: '#f59e0b', color: '#09090b' }}
+                >
                   Create
                 </button>
               </div>
@@ -343,9 +355,8 @@ export default function Social() {
                       <div
                         key={group.id}
                         className="rounded-2xl border overflow-hidden"
-                        style={{ backgroundColor: 'var(--bg-card)', borderColor: isExpanded ? 'rgba(245,200,66,0.35)' : 'var(--border)' }}
+                        style={{ backgroundColor: 'var(--bg-card)', borderColor: isExpanded ? 'rgba(245,158,11,0.35)' : 'var(--border)' }}
                       >
-                        {/* Group header row */}
                         <button
                           onClick={() => toggleGroup(group.id)}
                           className="w-full flex items-center justify-between p-4"
@@ -353,9 +364,9 @@ export default function Social() {
                           <div className="flex items-center gap-3">
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center"
-                              style={{ background: 'rgba(245,200,66,0.15)' }}
+                              style={{ background: 'rgba(245,158,11,0.12)' }}
                             >
-                              <Users size={16} style={{ color: '#f5c842' }} />
+                              <Users size={16} style={{ color: '#f59e0b' }} />
                             </div>
                             <div className="text-left">
                               <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{group.name}</p>
@@ -368,16 +379,13 @@ export default function Social() {
                           }
                         </button>
 
-                        {/* Expanded: members + add friends */}
                         {isExpanded && (
                           <div className="border-t px-4 pb-4" style={{ borderColor: 'var(--border)' }}>
-
-                            {/* Current members */}
                             <p className="text-xs font-semibold uppercase tracking-widest mt-3 mb-2" style={{ color: 'var(--text-muted)' }}>
                               Members
                             </p>
                             {loadingMembers[group.id] ? (
-                              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Loading…</p>
+                              <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Loading...</p>
                             ) : members.length === 0 ? (
                               <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>No members yet</p>
                             ) : (
@@ -391,7 +399,7 @@ export default function Social() {
                                     <div className="flex items-center gap-2">
                                       <div
                                         className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black"
-                                        style={{ background: 'rgba(245,200,66,0.2)', color: '#f5c842' }}
+                                        style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}
                                       >
                                         {(m.display_name || '?')[0].toUpperCase()}
                                       </div>
@@ -414,7 +422,6 @@ export default function Social() {
                               </div>
                             )}
 
-                            {/* Add friends to group */}
                             {friends.length > 0 && (
                               <>
                                 <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
@@ -467,10 +474,16 @@ export default function Social() {
                 <p className="text-sm text-center py-10" style={{ color: 'var(--text-muted)' }}>No alerts yet</p>
               ) : (
                 alerts.map((alert) => (
-                  <div key={alert.id}
-                    className={`p-3 rounded-xl border ${alert.is_read ? '' : 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800'}`}
-                    style={alert.is_read ? { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' } : {}}>
-                    <p className="text-sm font-medium" style={alert.is_read ? { color: 'var(--text)' } : { color: '#991b1b' }}>{alert.message}</p>
+                  <div
+                    key={alert.id}
+                    className="p-3 rounded-xl border"
+                    style={
+                      alert.is_read
+                        ? { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }
+                        : { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)' }
+                    }
+                  >
+                    <p className="text-sm font-medium" style={{ color: alert.is_read ? 'var(--text)' : '#ef4444' }}>{alert.message}</p>
                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                       {new Date(alert.created_at).toLocaleString()}
                     </p>

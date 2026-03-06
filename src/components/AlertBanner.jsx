@@ -23,26 +23,26 @@ export default function AlertBanner({ totalDrinks, limits, bac }) {
   if (!message) return null
 
   const styles = {
-    danger: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b', darkBg: '#450a0a33', darkBorder: '#7f1d1d', darkText: '#fca5a5' },
-    warning: { bg: '#fffbeb', border: '#fcd34d', text: '#92400e', darkBg: '#451a0333', darkBorder: '#78350f', darkText: '#fcd34d' },
-    info: { bg: '#f0fdf4', border: '#86efac', text: '#166534', darkBg: '#052e1633', darkBorder: '#14532d', darkText: '#86efac' },
+    danger: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', color: '#ef4444' },
+    warning: { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', color: '#f59e0b' },
+    info: { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)', color: '#10b981' },
   }
 
   const s = styles[severity]
 
   return (
     <div
-      className="rounded-xl border p-4 flex items-start gap-3 transition-colors"
-      style={{ backgroundColor: s.bg, borderColor: s.border, color: s.text }}
+      className="rounded-xl border p-4 flex items-start gap-3"
+      style={{ backgroundColor: s.bg, borderColor: s.border, color: s.color }}
     >
       {severity === 'danger' ? (
-        <XCircle size={20} className="shrink-0 mt-0.5" />
+        <XCircle size={18} className="shrink-0 mt-0.5" />
       ) : (
-        <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+        <AlertTriangle size={18} className="shrink-0 mt-0.5" />
       )}
       <div>
         <p className="text-sm font-semibold">{message}</p>
-        <p className="text-xs opacity-75 mt-1">Drink responsibly. Stay hydrated.</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Drink responsibly. Stay hydrated.</p>
       </div>
     </div>
   )
