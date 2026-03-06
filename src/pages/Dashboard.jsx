@@ -2,56 +2,19 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useDrinkSession } from '../hooks/useDrinkSession'
-import { Wine, BarChart3, Users, Trophy, Play, Moon, Sun, ChevronRight, Zap } from 'lucide-react'
+import { Wine, BarChart3, Users, Trophy, Moon, Sun, ChevronRight, Activity } from 'lucide-react'
 
 function getGreeting(name) {
-  const hour = new Date().getHours()
-  const emoji = hour < 6 ? '🌙' : hour < 12 ? '☀️' : hour < 17 ? '👋' : hour < 21 ? '🌆' : '🌙'
-  const word = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  return { word, emoji, name: name || 'there' }
+  const h = new Date().getHours()
+  const word = h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : 'Evening'
+  return { word, name: name?.split(' ')[0] || 'there' }
 }
 
 const tiles = [
-  {
-    id: 'start',
-    icon: Wine,
-    label: 'Start Night',
-    sub: 'Track drinks & BAC',
-    gradient: 'linear-gradient(135deg, #f5c842 0%, #f0a020 100%)',
-    textColor: '#0a0c14',
-    route: null, // special handler
-    glow: 'rgba(245,200,66,0.3)',
-  },
-  {
-    id: 'stats',
-    icon: BarChart3,
-    label: 'My Stats',
-    sub: 'Sessions & history',
-    gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    textColor: '#ffffff',
-    route: '/profile',
-    glow: 'rgba(59,130,246,0.3)',
-  },
-  {
-    id: 'friends',
-    icon: Users,
-    label: 'Friends',
-    sub: 'Social & alerts',
-    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-    textColor: '#ffffff',
-    route: '/social',
-    glow: 'rgba(139,92,246,0.3)',
-  },
-  {
-    id: 'board',
-    icon: Trophy,
-    label: 'Leaderboard',
-    sub: 'University rankings',
-    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    textColor: '#ffffff',
-    route: '/leaderboard',
-    glow: 'rgba(16,185,129,0.3)',
-  },
+  { id: 'start', icon: Wine, label: 'Track Tonight', sub: 'Log drinks & BAC', accent: '#f59e0b' },
+  { id: 'stats', icon: BarChart3, label: 'My Stats', sub: 'Sessions & history', accent: '#60a5fa', route: '/profile' },
+  { id: 'friends', icon: Users, label: 'Friends', sub: 'Social & alerts', accent: '#a78bfa', route: '/social' },
+  { id: 'board', icon: Trophy, label: 'Leaderboard', sub: 'Uni rankings', accent: '#22c55e', route: '/leaderboard' },
 ]
 
 export default function Dashboard() {
@@ -63,7 +26,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent" style={{ borderColor: '#f5c842', borderTopColor: 'transparent' }} />
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -77,10 +40,7 @@ export default function Dashboard() {
 
   async function handleTile(tile) {
     if (tile.id === 'start') {
-      if (activeSession) {
-        navigate('/track')
-        return
-      }
+      if (activeSession) { navigate('/track'); return }
       const { error } = await startSession()
       if (!error) navigate('/track')
     } else {
@@ -89,135 +49,112 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="min-h-screen pb-28 page-enter" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="max-w-lg mx-auto px-4 pt-8">
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-start justify-between mb-7">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-black text-2xl" style={{ color: '#f5c842' }}>Buzz</span>
-              <span className="font-black text-2xl" style={{ color: 'var(--text)' }}>Board</span>
-            </div>
-            <p className="font-semibold text-base" style={{ color: 'var(--text)' }}>
-              {greeting.word}, {greeting.name} {greeting.emoji}
+            <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>
+              {greeting.word}
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Drink smart. Stay safe.
-            </p>
+            <h1 className="text-2xl font-black" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>
+              {greeting.name}
+            </h1>
           </div>
           <button
             onClick={toggle}
-            className="p-2.5 rounded-xl border mt-1"
+            className="p-2 rounded-xl border mt-1"
             style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-card)' }}
           >
-            {dark ? <Sun size={16} /> : <Moon size={16} />}
+            {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
         </div>
 
-        {/* Active Session Banner */}
+        {/* Active session banner */}
         {activeSession && (
           <button
             onClick={() => navigate('/track')}
-            className="w-full mb-6 p-4 rounded-2xl flex items-center justify-between"
-            style={{
-              background: 'linear-gradient(135deg, rgba(245,200,66,0.15), rgba(245,200,66,0.05))',
-              border: '1px solid rgba(245,200,66,0.3)',
-            }}
+            className="w-full mb-6 px-4 py-3 rounded-2xl flex items-center justify-between"
+            style={{ background: 'var(--accent-dim)', border: '1px solid rgba(245,158,11,0.25)' }}
           >
             <div className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #f5c842, #f0a020)' }}
-              >
-                <Zap size={16} fill="#0a0c14" color="#0a0c14" />
-              </div>
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#f59e0b' }} />
               <div className="text-left">
-                <p className="font-bold text-sm" style={{ color: '#f5c842' }}>Night in progress</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{totalDrinks} drink{totalDrinks !== 1 ? 's' : ''} logged · tap to continue</p>
+                <p className="font-semibold text-sm" style={{ color: '#f59e0b' }}>Session active</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{totalDrinks} drink{totalDrinks !== 1 ? 's' : ''} · tap to continue</p>
               </div>
             </div>
-            <ChevronRight size={18} style={{ color: '#f5c842' }} />
+            <ChevronRight size={16} style={{ color: '#f59e0b' }} />
           </button>
         )}
 
-        {/* Quick-Launch Tiles */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        {/* Tiles */}
+        <div className="grid grid-cols-2 gap-2.5 mb-7">
           {tiles.map((tile) => {
             const Icon = tile.icon
             const isStart = tile.id === 'start'
             const label = isStart && activeSession ? 'Continue Night' : tile.label
-
             return (
               <button
                 key={tile.id}
                 onClick={() => handleTile(tile)}
-                className="relative rounded-2xl p-5 text-left overflow-hidden"
+                className="relative text-left rounded-2xl p-4 overflow-hidden"
                 style={{
-                  background: tile.gradient,
-                  boxShadow: `0 8px 24px ${tile.glow}`,
-                  minHeight: '130px',
+                  backgroundColor: isStart ? tile.accent : 'var(--bg-card)',
+                  border: isStart ? 'none' : '1px solid var(--border)',
+                  minHeight: '118px',
                 }}
               >
-                {/* Decorative circle */}
                 <div
-                  className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.1)' }}
-                />
-                <div
-                  className="absolute -right-1 -top-6 w-14 h-14 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}
-                />
-
-                <div className="relative z-10 flex flex-col h-full">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                    style={{ background: 'rgba(255,255,255,0.2)' }}
-                  >
-                    <Icon size={20} color={tile.textColor} strokeWidth={2} />
-                  </div>
-                  <p className="font-black text-sm leading-tight" style={{ color: tile.textColor }}>{label}</p>
-                  <p className="text-xs mt-0.5 font-medium" style={{ color: tile.textColor, opacity: 0.7 }}>{tile.sub}</p>
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: isStart ? 'rgba(0,0,0,0.15)' : `${tile.accent}14` }}
+                >
+                  <Icon size={18} style={{ color: isStart ? '#09090b' : tile.accent }} strokeWidth={1.8} />
                 </div>
+                <p className="font-bold text-sm leading-tight" style={{ color: isStart ? '#09090b' : 'var(--text)', letterSpacing: '-0.01em' }}>{label}</p>
+                <p className="text-xs mt-0.5" style={{ color: isStart ? 'rgba(9,9,11,0.6)' : 'var(--text-muted)' }}>{tile.sub}</p>
               </button>
             )
           })}
         </div>
 
-        {/* Your Limits */}
+        {/* Limits card */}
         <div
-          className="rounded-2xl border p-5 mb-4"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          className="rounded-2xl p-5 mb-4"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
-            Your Limits
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <Activity size={14} style={{ color: 'var(--text-muted)' }} />
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              Your Limits
+            </p>
+          </div>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'LOW', val: limits.low, color: '#10b981' },
-              { label: 'MED', val: limits.med, color: '#f5c842' },
-              { label: 'HIGH', val: limits.high, color: '#ef4444' },
+              { label: 'Low', val: limits.low, color: '#22c55e' },
+              { label: 'Med', val: limits.med, color: '#f59e0b' },
+              { label: 'High', val: limits.high, color: '#f43f5e' },
             ].map(({ label, val, color }) => (
               <div key={label} className="text-center">
                 <div
                   className="w-full py-3 rounded-xl mb-1.5 font-black text-2xl"
-                  style={{ background: `${color}15`, color }}
+                  style={{ background: `${color}10`, color, letterSpacing: '-0.02em' }}
                 >
                   {val || '—'}
                 </div>
-                <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
               </div>
             ))}
           </div>
 
-          {/* Calibration progress */}
           {profile && profile.calibration_count < 3 && (
             <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               <div className="flex justify-between items-center mb-2">
-                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                  Calibration — limits improve each session
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Calibration — limits sharpen over 3 nights
                 </p>
-                <span className="text-xs font-bold" style={{ color: '#f5c842' }}>
+                <span className="text-xs font-bold" style={{ color: '#f59e0b' }}>
                   {profile.calibration_count}/3
                 </span>
               </div>
@@ -225,10 +162,8 @@ export default function Dashboard() {
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="h-1.5 flex-1 rounded-full"
-                    style={{
-                      backgroundColor: i < profile.calibration_count ? '#f5c842' : 'var(--border)',
-                    }}
+                    className="h-1 flex-1 rounded-full"
+                    style={{ backgroundColor: i < profile.calibration_count ? '#f59e0b' : 'var(--border)' }}
                   />
                 ))}
               </div>
@@ -236,11 +171,9 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-          🛡️ Never drink and drive
+        <p className="text-center text-xs pb-2" style={{ color: 'var(--text-muted)' }}>
+          Never drink and drive
         </p>
-
       </div>
     </div>
   )
