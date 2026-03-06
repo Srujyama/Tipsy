@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { calculateLimits } from '../utils/bac'
+import UniversitySearch from '../components/UniversitySearch'
 import toast from 'react-hot-toast'
 
 export default function Onboarding() {
@@ -173,14 +174,11 @@ export default function Onboarding() {
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
                   University <span className="font-normal">(optional)</span>
                 </label>
-                <input
-                  type="text"
+                <UniversitySearch
                   value={university}
-                  onChange={(e) => setUniversity(e.target.value)}
-                  placeholder="e.g. State University"
-                  style={inputStyle}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                  onChange={setUniversity}
+                  inputStyle={inputStyle}
+                  placeholder="Search your university…"
                 />
                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>For leaderboard grouping</p>
               </div>

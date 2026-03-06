@@ -13,6 +13,7 @@ import Social from './pages/Social'
 import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 import SessionSummary from './pages/SessionSummary'
+import EmailConfirm from './pages/EmailConfirm'
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -61,6 +62,7 @@ export default function App() {
           path="/session/:sessionId"
           element={<ProtectedRoute><SessionSummary /></ProtectedRoute>}
         />
+        <Route path="/confirm" element={<EmailConfirm />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

@@ -1,18 +1,21 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { Moon, Sun, Mail, Lock, User, ArrowRight } from 'lucide-react'
+import { Moon, Sun, Mail, Lock, User, ArrowRight, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Signup() {
   const { signUp, user } = useAuth()
   const { dark, toggle } = useTheme()
+  const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState(null)
+  const [alreadyExists, setAlreadyExists] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   if (user) return <Navigate to="/dashboard" replace />
 
@@ -26,9 +29,19 @@ export default function Signup() {
     const { error } = await signUp(email, password, displayName)
     setLoading(false)
     if (error) {
-      toast.error(error.message)
+      // Supabase returns this when the email is already registered
+      if (
+        error.message?.toLowerCase().includes('already registered') ||
+        error.message?.toLowerCase().includes('user already exists') ||
+        error.message?.toLowerCase().includes('email address is already')
+      ) {
+        toast.error('An account with that email already exists.')
+        setAlreadyExists(true)
+      } else {
+        toast.error(error.message)
+      }
     } else {
-      toast.success('Account created! Check your email to confirm.')
+      setEmailSent(true)
     }
   }
 
@@ -77,94 +90,149 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Card */}
-        <div
-          className="rounded-3xl border p-6"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
-        >
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
-                Display Name
-              </label>
-              <div style={inputWrap(focusedField === 'name')}>
-                <User size={16} style={{ color: focusedField === 'name' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  onFocus={() => setFocusedField('name')}
-                  onBlur={() => setFocusedField(null)}
-                  required
-                  placeholder="Your name"
-                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
-                />
-              </div>
+        {/* Email sent confirmation screen */}
+        {emailSent ? (
+          <div
+            className="rounded-3xl border p-8 text-center"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'rgba(16,185,129,0.15)' }}
+            >
+              <CheckCircle size={32} color="#10b981" />
             </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
-                Email
-              </label>
-              <div style={inputWrap(focusedField === 'email')}>
-                <Mail size={16} style={{ color: focusedField === 'email' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                  required
-                  placeholder="you@email.com"
-                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
-                Password
-              </label>
-              <div style={inputWrap(focusedField === 'password')}>
-                <Lock size={16} style={{ color: focusedField === 'password' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
-                  required
-                  minLength={6}
-                  placeholder="Min 6 characters"
-                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
-                />
-              </div>
-            </div>
-
+            <h2 className="text-xl font-black mb-2" style={{ color: 'var(--text)' }}>Check your email</h2>
+            <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+              We sent a confirmation link to
+            </p>
+            <p className="text-sm font-bold mb-5" style={{ color: '#f5c842' }}>{email}</p>
+            <p className="text-xs mb-6 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              Click the link in the email to verify your account, then come back here and sign in with your credentials.
+            </p>
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+              onClick={() => navigate('/login')}
+              className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
               style={{
                 background: 'linear-gradient(135deg, #f5c842, #f0a020)',
                 color: '#0a0c14',
                 boxShadow: '0 6px 20px rgba(245,200,66,0.35)',
               }}
             >
-              {loading ? 'Creating account...' : (<>Create Account <ArrowRight size={16} /></>)}
+              Go to Sign In <ArrowRight size={16} />
             </button>
-          </form>
-        </div>
+          </div>
+        ) : (
+          <>
+            {/* Card */}
+            <div
+              className="rounded-3xl border p-6"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+            >
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                    Display Name
+                  </label>
+                  <div style={inputWrap(focusedField === 'name')}>
+                    <User size={16} style={{ color: focusedField === 'name' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      onFocus={() => setFocusedField('name')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                      placeholder="Your name"
+                      style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                </div>
 
-        <p className="text-center mt-5 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Already have an account?{' '}
-          <Link to="/login" className="font-bold" style={{ color: '#f5c842' }}>
-            Log in
-          </Link>
-        </p>
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                    Email
+                  </label>
+                  <div style={inputWrap(focusedField === 'email')}>
+                    <Mail size={16} style={{ color: focusedField === 'email' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                      placeholder="you@email.com"
+                      style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                    Password
+                  </label>
+                  <div style={inputWrap(focusedField === 'password')}>
+                    <Lock size={16} style={{ color: focusedField === 'password' ? '#f5c842' : 'var(--text-muted)', flexShrink: 0 }} />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                      minLength={6}
+                      placeholder="Min 6 characters"
+                      style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', width: '100%', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                  style={{
+                    background: 'linear-gradient(135deg, #f5c842, #f0a020)',
+                    color: '#0a0c14',
+                    boxShadow: '0 6px 20px rgba(245,200,66,0.35)',
+                  }}
+                >
+                  {loading ? 'Creating account...' : (<>Create Account <ArrowRight size={16} /></>)}
+                </button>
+              </form>
+            </div>
+
+            {/* Already exists banner */}
+            {alreadyExists && (
+              <div
+                className="mt-3 rounded-2xl border p-4 flex items-center justify-between gap-3"
+                style={{ backgroundColor: 'rgba(245,200,66,0.08)', borderColor: 'rgba(245,200,66,0.3)' }}
+              >
+                <p className="text-sm" style={{ color: 'var(--text)' }}>
+                  Already have an account?
+                </p>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-4 py-2 rounded-xl font-bold text-sm shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #f5c842, #f0a020)', color: '#0a0c14' }}
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+
+            <p className="text-center mt-5 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Already have an account?{' '}
+              <Link to="/login" className="font-bold" style={{ color: '#f5c842' }}>
+                Log in
+              </Link>
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

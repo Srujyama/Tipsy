@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { calculateLimits } from '../utils/bac'
 import { LogOut, Save, Moon, Sun, User, Scale, GraduationCap, Target, BarChart3, Trophy } from 'lucide-react'
+import UniversitySearch from '../components/UniversitySearch'
 import toast from 'react-hot-toast'
 
 function SectionCard({ icon: Icon, iconColor, iconBg, title, children }) {
@@ -168,12 +169,11 @@ export default function Profile() {
 
           {/* University */}
           <SectionCard icon={GraduationCap} iconColor="#8b5cf6" iconBg="rgba(139,92,246,0.15)" title="University">
-            <input
-              type="text" value={university}
-              onChange={(e) => setUniversity(e.target.value)}
-              placeholder="e.g. State University"
-              style={inputStyle}
-              onFocus={handleFocus} onBlur={handleBlur}
+            <UniversitySearch
+              value={university}
+              onChange={setUniversity}
+              inputStyle={inputStyle}
+              placeholder="Search your university…"
             />
             <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Used for leaderboard grouping</p>
           </SectionCard>
