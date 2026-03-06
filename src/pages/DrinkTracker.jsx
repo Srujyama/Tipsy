@@ -72,8 +72,8 @@ export default function DrinkTracker() {
   if (!activeSession && !ending.current) {
     const now = new Date()
     const hour = now.getHours()
-    // Show a "night" hint if it's between 8PM (20) and 6AM (6)
-    const isNightTime = hour >= 20 || hour < 6
+    // Show a "night" hint if it's between 6PM (18) and 6AM (6)
+    const isNightTime = hour >= 18 || hour < 6
     const limits = {
       low: profile?.calculated_low_limit || '—',
       med: profile?.calculated_med_limit || '—',

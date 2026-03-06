@@ -51,10 +51,34 @@ export default function Social() {
       supabase.from('friend_groups').select('*, friend_group_members(user_id)').eq('creator_id', user.id),
     ])
 
-    const friendList = (friendsRes.data || []).map((f) => {
+    let friendList = (friendsRes.data || []).map((f) => {
       const friendProfile = f.requester_id === user.id ? f.addressee : f.requester
       return { ...friendProfile, friendship_id: f.id, can_see_drinks: f.can_see_drinks }
     })
+
+    // After 6 PM, fetch active session drink totals for friends who allow visibility
+    const hour = new Date().getHours()
+    const isNightTime = hour >= 18 || hour < 6
+    const visibleFriendIds = friendList.filter((f) => f.can_see_drinks).map((f) => f.id)
+
+    if (isNightTime && visibleFriendIds.length > 0) {
+      const { data: activeSessions } = await supabase
+        .from('drink_sessions')
+        .select('user_id, total_standard_drinks')
+        .in('user_id', visibleFriendIds)
+        .eq('is_active', true)
+
+      const drinksByUser = {}
+      for (const s of activeSessions || []) {
+        drinksByUser[s.user_id] = s.total_standard_drinks || 0
+      }
+
+      friendList = friendList.map((f) => ({
+        ...f,
+        has_active_session: drinksByUser[f.id] !== undefined,
+        tonight_drinks: drinksByUser[f.id] ?? null,
+      }))
+    }
 
     setFriends(friendList)
     setRequests(requestsRes.data || [])
