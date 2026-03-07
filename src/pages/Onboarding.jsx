@@ -27,7 +27,7 @@ export default function Onboarding() {
     }
 
     setLoading(true)
-    const limits = calculateLimits(weightLbs, gender)
+    const limits = calculateLimits(weightLbs, gender, heightInches, null)
 
     const { error } = await updateProfile({
       biological_gender: gender,
@@ -183,7 +183,8 @@ export default function Onboarding() {
               </div>
 
               {feet && weight && gender && (() => {
-                const limits = calculateLimits(parseInt(weight), gender)
+                const hIn = parseInt(feet) * 12 + parseInt(inches || 0)
+                const limits = calculateLimits(parseInt(weight), gender, hIn || null, null)
                 return (
                   <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border)' }}>
                     <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--text)' }}>Your Estimated Limits</h3>

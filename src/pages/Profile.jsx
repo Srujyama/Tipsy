@@ -52,7 +52,9 @@ export default function Profile() {
 
     // Only recalculate limits if we have valid body stats
     const hasValidStats = !isNaN(weightLbs) && weightLbs > 0 && gender
-    const limits = hasValidStats ? calculateLimits(weightLbs, gender) : null
+    const limits = hasValidStats
+      ? calculateLimits(weightLbs, gender, isNaN(heightInches) ? null : heightInches, profile?.age || null)
+      : null
 
     const updates = {
       display_name: displayName,

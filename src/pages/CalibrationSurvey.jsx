@@ -47,7 +47,7 @@ export default function CalibrationSurvey() {
     const updates = { calibration_count: newCount }
 
     if (newCount >= 3) {
-      const baseLimits = calculateLimits(profile.weight_lbs, profile.biological_gender)
+      const baseLimits = calculateLimits(profile.weight_lbs, profile.biological_gender, profile.height_inches || null, profile.age || null)
       const { data: sessions } = await supabase
         .from('calibration_sessions')
         .select('*')

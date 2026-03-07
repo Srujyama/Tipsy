@@ -23,7 +23,9 @@ export function useDrinkSession() {
       totalDrinks,
       profile.weight_lbs,
       profile.biological_gender,
-      hoursElapsed
+      hoursElapsed,
+      profile.height_inches || null,
+      profile.age || null
     )
     setCurrentBAC(bac)
     return bac
@@ -110,7 +112,9 @@ export function useDrinkSession() {
         newTotal,
         profile.weight_lbs,
         profile.biological_gender,
-        hoursElapsed
+        hoursElapsed,
+        profile.height_inches || null,
+        profile.age || null
       )
       setCurrentBAC(newBAC)
 
