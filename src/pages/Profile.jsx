@@ -194,7 +194,7 @@ export default function Profile() {
           <SectionCard icon={Target} iconColor="#10b981" iconBg="rgba(16,185,129,0.15)" title="Personal Drink Limit">
             {/* Quick-pick buttons */}
             <div className="flex gap-2 mb-3 flex-wrap">
-              {[3, 4, 5, 6, 8, 10].map((n) => {
+              {[3, 4, 5, 6, 8, 10, 12, 15].map((n) => {
                 const active = parseInt(personalLimit) === n
                 return (
                   <button
@@ -217,7 +217,7 @@ export default function Profile() {
               <input
                 type="number" value={personalLimit}
                 onChange={(e) => setPersonalLimit(e.target.value)}
-                min="1" max="30"
+                min="1"
                 placeholder="Custom…"
                 style={{ ...inputStyle, flex: 1 }}
                 onFocus={handleFocus} onBlur={handleBlur}
@@ -235,7 +235,7 @@ export default function Profile() {
             </div>
             <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
               {personalLimit
-                ? `Your tracker will use ${personalLimit} drinks as your limit tonight.`
+                ? `Your tracker will use ${personalLimit} drinks as your goal tonight.`
                 : 'Leave blank to use your calculated BAC-based limits.'}
             </p>
           </SectionCard>
