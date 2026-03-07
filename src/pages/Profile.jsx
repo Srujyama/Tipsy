@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { calculateLimits } from '../utils/bac'
-import { LogOut, Save, Moon, Sun, User, Scale, GraduationCap, Target, BarChart3, Trophy } from 'lucide-react'
+import { LogOut, Save, Moon, Sun, User, Scale, GraduationCap, Target, BarChart3, Trophy, Award, History, ChevronRight, Shield } from 'lucide-react'
 import UniversitySearch from '../components/UniversitySearch'
 import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
+
+const ADMIN_EMAILS = ['srujantyamali@gmail.com', 'srujanyamali@berkeley.edu']
 
 function SectionCard({ icon: Icon, iconColor, iconBg, title, children }) {
   return (
@@ -24,7 +27,8 @@ function SectionCard({ icon: Icon, iconColor, iconBg, title, children }) {
 }
 
 export default function Profile() {
-  const { profile, signOut, updateProfile } = useAuth()
+  const { profile, signOut, updateProfile, user } = useAuth()
+  const isAdmin = user && ADMIN_EMAILS.includes(user.email)
   const { dark, toggle } = useTheme()
   const [displayName, setDisplayName] = useState(profile?.display_name || '')
   const [gender, setGender] = useState(profile?.biological_gender || '')
@@ -281,6 +285,34 @@ export default function Profile() {
               </button>
             </div>
           </SectionCard>
+
+          {/* Quick links */}
+          <div
+            className="rounded-2xl border overflow-hidden"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            {[
+              { to: '/history', icon: BarChart3, color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', label: 'Session History', sub: 'View past nights & analytics' },
+              { to: '/achievements', icon: Award, color: '#f97316', bg: 'rgba(249,115,22,0.12)', label: 'Achievements', sub: 'Badges & streaks' },
+              ...(isAdmin ? [{ to: '/admin', icon: Shield, color: '#ef4444', bg: 'rgba(239,68,68,0.12)', label: 'Admin Panel', sub: 'Manage users & content' }] : []),
+            ].map(({ to, icon: Icon, color, bg, label, sub }, i) => (
+              <Link
+                key={to}
+                to={to}
+                className="flex items-center gap-3 px-5 py-4 border-b"
+                style={{ borderColor: 'var(--border)', borderBottomWidth: i < 1 || isAdmin ? '1px' : '0' }}
+              >
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: bg }}>
+                  <Icon size={16} style={{ color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{label}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+                </div>
+                <ChevronRight size={15} style={{ color: 'var(--text-muted)' }} />
+              </Link>
+            ))}
+          </div>
 
           {/* Danger zone */}
           <div

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import FriendCard from '../components/FriendCard'
-import { UserPlus, Users, Bell, Search, Plus, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { UserPlus, Users, Bell, Search, Plus, X, ChevronDown, ChevronRight, BellRing } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { sendFriendAlertNotification, requestPushPermission, getPushPermission } from '../utils/pushNotifications'
 
 export default function Social() {
   const { user } = useAuth()
@@ -28,8 +29,10 @@ export default function Social() {
         event: 'INSERT', schema: 'public', table: 'friend_alerts',
         filter: `friend_id=eq.${user.id}`,
       }, (payload) => {
-        toast(payload.new.message, { icon: 'warning', duration: 5000 })
+        toast(payload.new.message, { icon: '⚠️', duration: 5000 })
         setAlerts((prev) => [payload.new, ...prev])
+        // Send browser push notification if permission granted
+        sendFriendAlertNotification('Friend Alert', payload.new.message)
       })
       .subscribe()
     return () => supabase.removeChannel(channel)
@@ -470,6 +473,31 @@ export default function Social() {
           {/* Alerts Tab */}
           {tab === 'alerts' && (
             <div className="space-y-2">
+              {/* Push permission prompt */}
+              {getPushPermission() !== 'granted' && getPushPermission() !== 'unsupported' && (
+                <div
+                  className="rounded-2xl border p-4 flex items-center gap-3 mb-2"
+                  style={{ backgroundColor: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}
+                >
+                  <BellRing size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Enable push notifications</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Get notified when friends exceed their limits</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const result = await requestPushPermission()
+                      if (result === 'granted') toast.success('Notifications enabled!')
+                      else toast.error('Permission denied')
+                    }}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold flex-shrink-0"
+                    style={{ background: '#f59e0b', color: '#09090b' }}
+                  >
+                    Enable
+                  </button>
+                </div>
+              )}
+
               {alerts.length === 0 ? (
                 <p className="text-sm text-center py-10" style={{ color: 'var(--text-muted)' }}>No alerts yet</p>
               ) : (

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useDrinkSession } from '../hooks/useDrinkSession'
@@ -6,7 +6,8 @@ import { DRINK_TYPES } from '../utils/bac'
 import BACMeter from '../components/BACMeter'
 import AlertBanner from '../components/AlertBanner'
 import toast from 'react-hot-toast'
-import { Wine, Beer, GlassWater, Play, Clock, Shield } from 'lucide-react'
+import { Wine, Beer, GlassWater, Play, Clock, Shield, Droplets, Car, X } from 'lucide-react'
+import { sendBACWarningNotification } from '../utils/pushNotifications'
 
 const tips = [
   'Alternate alcoholic drinks with water.',
@@ -59,6 +60,41 @@ export default function DrinkTracker() {
   const navigate = useNavigate()
   const ending = useRef(false)
   const [starting, setStarting] = useState(false)
+  const [waterCount, setWaterCount] = useState(0)
+  const [showSafeRide, setShowSafeRide] = useState(false)
+  const lastReminderRef = useRef(Date.now())
+
+  // Hydration reminder: every 2 drinks or every 45 min remind to drink water
+  const drinkCountRef = useRef(0)
+  useEffect(() => {
+    if (!activeSession) return
+    if (drinkLogs.length > 0 && drinkLogs.length > drinkCountRef.current && drinkLogs.length % 2 === 0) {
+      drinkCountRef.current = drinkLogs.length
+      const now = Date.now()
+      if (now - lastReminderRef.current > 5 * 60 * 1000) { // throttle 5 min
+        lastReminderRef.current = now
+        toast('💧 Drink some water!', {
+          duration: 4000,
+          style: {
+            background: 'rgba(59,130,246,0.15)',
+            border: '1px solid rgba(59,130,246,0.3)',
+            color: 'var(--text)',
+          },
+        })
+      }
+    }
+  }, [drinkLogs, activeSession])
+
+  // Show safe ride banner when BAC >= 0.05
+  const bacWarnedRef = useRef(false)
+  useEffect(() => {
+    if (currentBAC >= 0.05) setShowSafeRide(true)
+    if (currentBAC >= 0.08 && !bacWarnedRef.current) {
+      bacWarnedRef.current = true
+      sendBACWarningNotification(currentBAC)
+    }
+    if (currentBAC < 0.07) bacWarnedRef.current = false
+  }, [currentBAC])
 
   if (loading) {
     return (
@@ -272,6 +308,42 @@ export default function DrinkTracker() {
           <AlertBanner totalDrinks={totalDrinks} limits={limits} bac={currentBAC} />
         </div>
 
+        {/* Safe Ride Banner */}
+        {showSafeRide && (
+          <div
+            className="rounded-2xl border p-4 mb-4 flex items-start gap-3"
+            style={{ backgroundColor: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.25)' }}
+          >
+            <Car size={18} style={{ color: '#ef4444', flexShrink: 0, marginTop: '1px' }} />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm mb-1" style={{ color: '#ef4444' }}>Plan your safe ride home</p>
+              <div className="flex gap-2 flex-wrap">
+                <a
+                  href="https://uber.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                  style={{ background: '#000', color: '#fff' }}
+                >
+                  Open Uber
+                </a>
+                <a
+                  href="https://lyft.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                  style={{ background: '#ff00bf', color: '#fff' }}
+                >
+                  Open Lyft
+                </a>
+              </div>
+            </div>
+            <button onClick={() => setShowSafeRide(false)} style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         {/* Drink Cards */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           {Object.entries(DRINK_TYPES).map(([type, info]) => {
@@ -310,6 +382,46 @@ export default function DrinkTracker() {
               </button>
             )
           })}
+        </div>
+
+        {/* Water Log */}
+        <div
+          className="rounded-2xl border p-4 mb-5 flex items-center justify-between"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Droplets size={16} style={{ color: '#3b82f6' }} />
+            <div>
+              <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Water intake</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                {waterCount === 0 ? 'Stay hydrated!' : `${waterCount} glass${waterCount !== 1 ? 'es' : ''} logged`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {waterCount > 0 && (
+              <button
+                onClick={() => setWaterCount((c) => Math.max(0, c - 1))}
+                className="w-8 h-8 rounded-xl border font-black text-base flex items-center justify-center"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                −
+              </button>
+            )}
+            <span className="font-black text-lg w-5 text-center" style={{ color: waterCount > 0 ? '#3b82f6' : 'var(--text-muted)' }}>
+              {waterCount}
+            </span>
+            <button
+              onClick={() => {
+                setWaterCount((c) => c + 1)
+                toast('💧 Water logged!', { duration: 1500 })
+              }}
+              className="w-8 h-8 rounded-xl font-black text-base flex items-center justify-center"
+              style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Drink Log */}

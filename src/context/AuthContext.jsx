@@ -63,6 +63,22 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    return { data, error }
+  }
+
+  async function signInWithApple() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    return { data, error }
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
     setUser(null)
@@ -96,6 +112,8 @@ export function AuthProvider({ children }) {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
+    signInWithApple,
     signOut,
     updateProfile,
     refreshProfile: () => user?.id ? fetchProfile(user.id) : null,

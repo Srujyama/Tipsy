@@ -5,6 +5,8 @@ import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import DrinkTracker from './pages/DrinkTracker'
@@ -14,6 +16,9 @@ import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 import SessionSummary from './pages/SessionSummary'
 import EmailConfirm from './pages/EmailConfirm'
+import History from './pages/History'
+import Achievements from './pages/Achievements'
+import Admin from './pages/Admin'
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -63,6 +68,20 @@ export default function App() {
           element={<ProtectedRoute><SessionSummary /></ProtectedRoute>}
         />
         <Route path="/confirm" element={<EmailConfirm />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/history"
+          element={<ProtectedRoute><History /></ProtectedRoute>}
+        />
+        <Route
+          path="/achievements"
+          element={<ProtectedRoute><Achievements /></ProtectedRoute>}
+        />
+        <Route
+          path="/admin"
+          element={<ProtectedRoute><Admin /></ProtectedRoute>}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

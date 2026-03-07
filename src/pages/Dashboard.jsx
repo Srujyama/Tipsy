@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useDrinkSession } from '../hooks/useDrinkSession'
-import { Wine, BarChart3, Users, Trophy, Moon, Sun, ChevronRight, Activity } from 'lucide-react'
+import { Wine, BarChart3, Users, Trophy, Moon, Sun, ChevronRight, Activity, Award } from 'lucide-react'
 
 function getGreeting(name) {
   const h = new Date().getHours()
@@ -12,9 +12,10 @@ function getGreeting(name) {
 
 const tiles = [
   { id: 'start', icon: Wine, label: 'Track Tonight', sub: 'Log drinks & BAC', accent: '#f59e0b' },
-  { id: 'stats', icon: BarChart3, label: 'My Stats', sub: 'Sessions & history', accent: '#60a5fa', route: '/profile' },
+  { id: 'history', icon: BarChart3, label: 'History', sub: 'Sessions & analytics', accent: '#60a5fa', route: '/history' },
   { id: 'friends', icon: Users, label: 'Friends', sub: 'Social & alerts', accent: '#a78bfa', route: '/social' },
   { id: 'board', icon: Trophy, label: 'Leaderboard', sub: 'Uni rankings', accent: '#22c55e', route: '/leaderboard' },
+  { id: 'achievements', icon: Award, label: 'Achievements', sub: 'Badges & streaks', accent: '#f97316', route: '/achievements' },
 ]
 
 export default function Dashboard() {
@@ -41,8 +42,7 @@ export default function Dashboard() {
   async function handleTile(tile) {
     if (tile.id === 'start') {
       if (activeSession) { navigate('/track'); return }
-      const { error } = await startSession()
-      if (!error) navigate('/track')
+      navigate('/track')
     } else {
       navigate(tile.route)
     }
@@ -103,7 +103,7 @@ export default function Dashboard() {
                 style={{
                   backgroundColor: isStart ? tile.accent : 'var(--bg-card)',
                   border: isStart ? 'none' : '1px solid var(--border)',
-                  minHeight: '118px',
+                  minHeight: '100px',
                 }}
               >
                 <div
