@@ -22,13 +22,13 @@ export default defineConfig({
           {
             src: "/Tipsy_logo.png",
             sizes: "192x192",
-            type: "image/svg+xml",
+            type: "image/png",
             purpose: "any maskable",
           },
           {
             src: "/Tipsy_logo.png",
             sizes: "512x512",
-            type: "image/svg+xml",
+            type: "image/png",
             purpose: "any maskable",
           },
         ],
