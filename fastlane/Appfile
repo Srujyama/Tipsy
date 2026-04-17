@@ -1,0 +1,4 @@
+app_identifier("com.tipsy.app")
+apple_id(ENV["APPLE_ID"] || "your-apple-id@example.com")
+team_id("G4H29PDG94")
+itc_team_id(ENV["ITC_TEAM_ID"])
