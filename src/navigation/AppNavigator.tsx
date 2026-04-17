@@ -14,6 +14,7 @@ import TrackScreen from '../screens/TrackScreen';
 import SocialScreen from '../screens/SocialScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -132,6 +133,7 @@ export default function AppNavigator() {
               component={LeaderboardScreen}
               options={{presentation: 'modal'}}
             />
+            <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
           </>
         )}
       </Stack.Navigator>

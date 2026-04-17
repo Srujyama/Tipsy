@@ -14,7 +14,7 @@ Check each item off. Items marked **[CLAUDE CAN DO]** I'll handle; items marked 
 ## 2. What to do in App Store Connect (one-time, ~15 min)
 1. Sign in → **My Apps** → **+** → **New App**
 2. Platform: **iOS**; Name: **Tipsy**; Primary language: **English (U.S.)**
-3. Bundle ID: select `com.tipsy.app` (appears after you register it in developer.apple.com → Identifiers — fastlane can do this too)
+3. Bundle ID: select `com.tipsyios.app` (appears after you register it in developer.apple.com → Identifiers — fastlane can do this too)
 4. SKU: `tipsy-ios-001`
 5. User Access: Full Access
 6. Fill in the metadata from `fastlane/metadata.md`
@@ -52,7 +52,7 @@ Play Store requires:
 Ignore until iOS ships.
 
 ## 7. Things blocking first TestFlight build (current status)
-- [x] iOS bundle id set (`com.tipsy.app`)
+- [x] iOS bundle id set (`com.tipsyios.app`)
 - [x] Development team set (`G4H29PDG94`)
 - [x] Version 1.0, build 1
 - [x] App icons generated

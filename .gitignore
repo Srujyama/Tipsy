@@ -55,6 +55,7 @@ yarn-error.log
 fastlane/.env
 fastlane/*.p8
 fastlane/AuthKey_*.p8
+fastlane/keys/
 
 # Bundle artifact
 *.jsbundle

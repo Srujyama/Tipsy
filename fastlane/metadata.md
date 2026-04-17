@@ -3,7 +3,7 @@
 ## Basics
 - **App name:** Tipsy
 - **Subtitle (30 char max):** Drink smart. Stay social.
-- **Bundle ID:** com.tipsy.app
+- **Bundle ID:** com.tipsyios.app
 - **SKU:** tipsy-ios-001
 - **Primary category:** Health & Fitness
 - **Secondary category:** Lifestyle
@@ -49,7 +49,7 @@ drink,tracker,bac,alcohol,calculator,hangover,sober,calories,bar,uber,lyft,pacin
 ## URLs (you'll need to host these)
 - **Support URL:** https://tipsy.app/support  (or any page with contact info — a simple GitHub Pages site works)
 - **Marketing URL (optional):** https://tipsy.app
-- **Privacy Policy URL (REQUIRED):** https://tipsy.app/privacy
+- **Privacy Policy URL (REQUIRED):** https://htmlpreview.github.io/?https://gist.githubusercontent.com/Srujyama/1d83663fc4526847f6fa28b83ce74c88/raw/index.html
 
 ## Privacy Policy — Required Sections
 Your policy must cover:

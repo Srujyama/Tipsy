@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
 import {onUserProfileChange, updateUserProfile, signOut, getDrinkHistory, getCurrentUser} from '../services/firebase';
 import type {DrinkSession} from '../services/firebase';
 import {getInitials} from '../utils/helpers';
@@ -29,6 +30,7 @@ export default function SettingsScreen() {
   const [goal, setGoal] = useState<DrinkGoal>({maxDrinks: 0, maxCalories: 0, maxSpending: 0});
   const [goalDrinks, setGoalDrinks] = useState('');
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const user = getCurrentUser();
 
   useEffect(() => {
@@ -237,6 +239,14 @@ export default function SettingsScreen() {
         </Text>
       </View>
 
+      <View style={[s.card, {marginTop: 0}]}>
+        <Text style={s.sectionLabel}>LEGAL</Text>
+        <TouchableOpacity style={s.legalRow} onPress={() => navigation.navigate('PrivacyPolicy')}>
+          <Text style={s.legalText}>Privacy Policy</Text>
+          <Text style={s.legalChevron}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={s.versionText}>Tipsy v1.0.0</Text>
     </ScrollView>
   );
@@ -292,4 +302,7 @@ const s = StyleSheet.create({
 
   aboutText: {color: '#555', fontSize: 12, lineHeight: 18, fontWeight: '300'},
   versionText: {color: '#222', fontSize: 10, textAlign: 'center', marginTop: 32, letterSpacing: 2, marginBottom: 20},
+  legalRow: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4},
+  legalText: {color: '#f5f0eb', fontSize: 14, fontWeight: '300'},
+  legalChevron: {color: '#555', fontSize: 20, fontWeight: '300'},
 });
