@@ -31,6 +31,14 @@ Install CocoaPods (uses scripts/pod-install.sh to bypass vendored bundler 1.17.2
 
 Bump build number from App Store Connect latest + 1
 
+### ios signing
+
+```sh
+[bundle exec] fastlane ios signing
+```
+
+Fetch or create Distribution cert + App Store provisioning profile
+
 ### ios build
 
 ```sh
