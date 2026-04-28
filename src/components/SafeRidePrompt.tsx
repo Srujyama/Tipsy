@@ -2,13 +2,11 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Linking, Alert} from 'react-native';
 
 interface SafeRidePromptProps {
-  bac: number;
+  drinkCount: number;
 }
 
-export default function SafeRidePrompt({bac}: SafeRidePromptProps) {
-  if (bac < 0.06) return null;
-
-  const isOverLimit = bac >= 0.08;
+export default function SafeRidePrompt({drinkCount}: SafeRidePromptProps) {
+  if (drinkCount < 2) return null;
 
   const openUber = () => {
     Linking.openURL('uber://').catch(() => {
@@ -27,17 +25,11 @@ export default function SafeRidePrompt({bac}: SafeRidePromptProps) {
   };
 
   return (
-    <View style={[s.container, isOverLimit && s.containerDanger]}>
-      <Text style={s.icon}>{isOverLimit ? '🚨' : '⚠️'}</Text>
+    <View style={s.container}>
+      <Text style={s.icon}>🚕</Text>
       <View style={{flex: 1}}>
-        <Text style={[s.title, isOverLimit && s.titleDanger]}>
-          {isOverLimit ? 'Do NOT drive' : 'Consider a ride'}
-        </Text>
-        <Text style={s.subtitle}>
-          {isOverLimit
-            ? `Your BAC (${bac.toFixed(3)}) is over the legal limit`
-            : `Your BAC (${bac.toFixed(3)}) is approaching the limit`}
-        </Text>
+        <Text style={s.title}>Get a safe ride home</Text>
+        <Text style={s.subtitle}>If you've been drinking, don't drive — call a ride.</Text>
       </View>
       <View style={s.buttons}>
         <TouchableOpacity style={s.rideBtn} onPress={openUber}>
@@ -62,10 +54,6 @@ const s = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
-  containerDanger: {
-    borderColor: '#8b202060',
-    backgroundColor: '#14090a',
-  },
   icon: {
     fontSize: 24,
     marginRight: 12,
@@ -74,9 +62,6 @@ const s = StyleSheet.create({
     color: '#c9a96e',
     fontSize: 14,
     fontWeight: '400',
-  },
-  titleDanger: {
-    color: '#cc4444',
   },
   subtitle: {
     color: '#555',

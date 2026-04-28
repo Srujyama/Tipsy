@@ -5,7 +5,6 @@ import {getDrinkPrice} from './prices';
 
 export async function shareSession(
   drinks: DrinkLog[],
-  bac: number,
   totalCalories: number,
 ) {
   if (drinks.length === 0) return;
@@ -26,7 +25,6 @@ export async function shareSession(
     `🍻 Tonight on Tipsy`,
     ``,
     `${drinks.length} drink${drinks.length !== 1 ? 's' : ''}: ${drinkList}`,
-    `📊 BAC: ${bac.toFixed(3)}`,
     `🔥 ${totalCalories} calories`,
     `💰 ~$${totalSpent} spent`,
     ``,

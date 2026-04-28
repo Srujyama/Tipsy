@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import {signIn, signUp, createUserProfile} from '../services/firebase';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {GoogleAuthProvider, signInWithCredential} from 'firebase/auth';
+import {appleAuth} from '@invertase/react-native-apple-authentication';
+import {GoogleAuthProvider, OAuthProvider, signInWithCredential} from 'firebase/auth';
 import {auth} from '../services/firebaseConfig';
 
 GoogleSignin.configure({
@@ -61,6 +62,39 @@ export default function AuthScreen() {
       Alert.alert('', msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    if (Platform.OS !== 'ios') return;
+    try {
+      const response = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
+      const {identityToken, nonce, fullName, email} = response;
+      if (!identityToken) throw new Error('Apple sign-in failed: no identity token');
+
+      const provider = new OAuthProvider('apple.com');
+      const credential = provider.credential({idToken: identityToken, rawNonce: nonce});
+      const result = await signInWithCredential(auth, credential);
+
+      if (result.user) {
+        const {uid, email: appleEmail} = result.user;
+        const display = [fullName?.givenName, fullName?.familyName].filter(Boolean).join(' ').trim();
+        await createUserProfile(uid, {
+          email: appleEmail || email || '',
+          username: display ? display.toLowerCase().replace(/\s/g, '') : `user${uid.slice(0, 6)}`,
+          realName: display || 'Tipsy User',
+          age: 0,
+          weight: 0,
+          gender: 'Male',
+        }).catch(() => {}); // ignore if already exists
+      }
+    } catch (error: any) {
+      if (error.code !== appleAuth.Error.CANCELED && error.code !== '1001') {
+        Alert.alert('', error.message || 'Apple sign-in failed');
+      }
     }
   };
 
@@ -178,6 +212,13 @@ export default function AuthScreen() {
           <Text style={styles.dividerText}>OR</Text>
           <View style={styles.dividerLine} />
         </View>
+
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity style={styles.appleButton} onPress={handleAppleSignIn}>
+            <Text style={styles.appleLogo}></Text>
+            <Text style={styles.appleText}>Continue with Apple</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
           <Text style={styles.googleG}>G</Text>
@@ -303,6 +344,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 10,
     letterSpacing: 3,
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f0eb',
+    paddingVertical: 16,
+    marginBottom: 10,
+  },
+  appleLogo: {
+    fontSize: 18,
+    marginRight: 10,
+    color: '#0a0a0f',
+    marginTop: -3,
+  },
+  appleText: {
+    color: '#0a0a0f',
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 1,
   },
   googleButton: {
     flexDirection: 'row',

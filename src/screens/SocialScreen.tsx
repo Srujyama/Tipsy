@@ -96,7 +96,7 @@ export default function SocialScreen() {
     Alert.alert('Safety Alert', 'Notify all friends that you need help?', [
       {text: 'Cancel', style: 'cancel'},
       {text: 'Send', style: 'destructive', onPress: () => {
-        sendSafetyAlert(user.uid, profile.username, 0);
+        sendSafetyAlert(user.uid, profile.username);
         Alert.alert('', 'Your friends have been notified');
       }},
     ]);

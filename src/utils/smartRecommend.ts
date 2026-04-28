@@ -7,20 +7,11 @@ interface Recommendation {
 
 // Recommend drinks based on user's current state
 export function getSmartRecommendation(
-  currentBAC: number,
   totalCalories: number,
   drinkCount: number,
   drinksPerHour: number,
 ): Recommendation | null {
   if (drinkCount === 0) return null;
-
-  // If BAC is high, suggest low-ABV options
-  if (currentBAC >= 0.08) {
-    return {
-      type: 'seltzer',
-      reason: 'Low ABV option — you\'re over the legal limit',
-    };
-  }
 
   // If drinking fast, suggest something to sip slowly
   if (drinksPerHour > 2.5) {

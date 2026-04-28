@@ -10,10 +10,8 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
-import {onUserProfileChange, updateUserProfile, signOut, getDrinkHistory, getCurrentUser} from '../services/firebase';
-import type {DrinkSession} from '../services/firebase';
+import {onUserProfileChange, updateUserProfile, signOut, getDrinkHistory, getCurrentUser, deleteAccount} from '../services/firebase';
 import {getInitials} from '../utils/helpers';
-import {calculateBAC} from '../utils/bac';
 import {getAchievements, Achievement} from '../utils/achievements';
 import {getDrinkGoal, setDrinkGoal, DrinkGoal} from '../utils/drinkGoal';
 import {UserProfile} from '../types';
@@ -90,6 +88,47 @@ export default function SettingsScreen() {
       {text: 'Cancel', style: 'cancel'},
       {text: 'Sign Out', style: 'destructive', onPress: () => signOut()},
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This permanently deletes your profile, drinks, friends, groups, and alerts. This cannot be undone.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you sure?',
+              'Tap Delete again to permanently erase your account.',
+              [
+                {text: 'Cancel', style: 'cancel'},
+                {
+                  text: 'Delete',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await deleteAccount();
+                    } catch (e: any) {
+                      if (e.code === 'auth/requires-recent-login') {
+                        Alert.alert(
+                          'Sign in again',
+                          'For your security, please sign out and sign back in, then try deleting your account again.',
+                        );
+                      } else {
+                        Alert.alert('', e.message || 'Could not delete account');
+                      }
+                    }
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -185,53 +224,22 @@ export default function SettingsScreen() {
         </View>
       )}
 
-      {/* Personal BAC Estimator */}
-      {profile && profile.weight > 0 && (
-        <View style={[s.card, {marginTop: 24}]}>
-          <Text style={s.sectionLabel}>YOUR BAC ESTIMATES</Text>
-          <Text style={s.bacSubtitle}>Based on your weight ({weight} lbs) and gender ({gender})</Text>
-          <View style={s.bacTableHeader}>
-            <Text style={[s.bacTableCell, s.bacTableHeaderText, {flex: 2}]}>Drinks</Text>
-            <Text style={[s.bacTableCell, s.bacTableHeaderText]}>1 hr</Text>
-            <Text style={[s.bacTableCell, s.bacTableHeaderText]}>2 hr</Text>
-            <Text style={[s.bacTableCell, s.bacTableHeaderText]}>3 hr</Text>
-          </View>
-          {[1, 2, 3, 4, 5, 6].map(numDrinks => {
-            const w = parseInt(weight, 10) || 150;
-            const g = gender as 'Male' | 'Female' | 'Other';
-            const bac1 = calculateBAC(numDrinks, w, g, 1);
-            const bac2 = calculateBAC(numDrinks, w, g, 2);
-            const bac3 = calculateBAC(numDrinks, w, g, 3);
-            const getColor = (b: number) => b >= 0.08 ? '#8b2020' : b >= 0.05 ? '#c9a96e' : '#4a6';
-            return (
-              <View key={numDrinks} style={s.bacTableRow}>
-                <Text style={[s.bacTableCell, {flex: 2, color: '#f5f0eb'}]}>{numDrinks} drink{numDrinks > 1 ? 's' : ''}</Text>
-                <Text style={[s.bacTableCell, {color: getColor(bac1)}]}>{bac1.toFixed(3)}</Text>
-                <Text style={[s.bacTableCell, {color: getColor(bac2)}]}>{bac2.toFixed(3)}</Text>
-                <Text style={[s.bacTableCell, {color: getColor(bac3)}]}>{bac3.toFixed(3)}</Text>
-              </View>
-            );
-          })}
-          <View style={s.bacLegend}>
-            <View style={s.bacLegendItem}><View style={[s.bacLegendDot, {backgroundColor: '#4a6'}]} /><Text style={s.bacLegendText}>Safe</Text></View>
-            <View style={s.bacLegendItem}><View style={[s.bacLegendDot, {backgroundColor: '#c9a96e'}]} /><Text style={s.bacLegendText}>Caution</Text></View>
-            <View style={s.bacLegendItem}><View style={[s.bacLegendDot, {backgroundColor: '#8b2020'}]} /><Text style={s.bacLegendText}>Over limit</Text></View>
-          </View>
-        </View>
-      )}
-
       <TouchableOpacity style={[s.signOutButton, {marginTop: 24}]} onPress={handleSignOut}>
         <Text style={s.signOutText}>Sign Out</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[s.deleteButton, {marginTop: 12}]} onPress={handleDeleteAccount}>
+        <Text style={s.deleteText}>Delete Account</Text>
       </TouchableOpacity>
 
       {/* About */}
       <View style={[s.card, {marginTop: 24}]}>
         <Text style={s.sectionLabel}>ABOUT TIPSY</Text>
         <Text style={s.aboutText}>
-          Tipsy uses the Widmark formula to estimate your blood alcohol content
-          based on your weight, gender, and drink history. BAC estimates are for
-          informational purposes only and should not be used to determine
-          whether you are fit to drive.
+          Tipsy is a drink-tracking app for logging what you drink, watching
+          calories and spending, pacing your night, and sharing progress with
+          friends. Tipsy does not estimate intoxication or fitness to drive.
+          Never drive after drinking.
         </Text>
         <Text style={[s.aboutText, {marginTop: 12}]}>
           Calorie data sourced from USDA FoodData Central and brand nutrition labels.
@@ -272,6 +280,8 @@ const s = StyleSheet.create({
   saveText: {color: '#0a0a0f', fontSize: 13, fontWeight: '600', letterSpacing: 2},
   signOutButton: {borderWidth: 0.5, borderColor: '#1e1e25', paddingVertical: 18, alignItems: 'center'},
   signOutText: {color: '#555', fontSize: 13, fontWeight: '400', letterSpacing: 2},
+  deleteButton: {borderWidth: 0.5, borderColor: '#8b202060', paddingVertical: 18, alignItems: 'center'},
+  deleteText: {color: '#8b2020', fontSize: 13, fontWeight: '400', letterSpacing: 2},
 
   goalSubtitle: {color: '#444', fontSize: 11, marginBottom: 14},
   goalRow: {flexDirection: 'row', gap: 8, flexWrap: 'wrap'},

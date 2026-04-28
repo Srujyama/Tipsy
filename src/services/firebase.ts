@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
+  deleteUser,
   User,
 } from 'firebase/auth';
 import {
@@ -318,8 +319,54 @@ export async function getLeaderboard(
   return results.sort((a, b) => b.drinkCount - a.drinkCount);
 }
 
+// Account deletion: purge all user-owned data, then delete the Firebase auth user.
+// Fails fast on the auth deletion if the credential is too old — the caller can
+// catch and prompt the user to re-authenticate.
+export async function deleteAccount(): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not signed in');
+  const uid = user.uid;
+
+  // 1. Drinks
+  const drinksSnap = await getDocs(query(collection(db, 'drinks'), where('userId', '==', uid)));
+  await Promise.all(drinksSnap.docs.map(d => deleteDoc(d.ref)));
+
+  // 2. Friend records (composite doc IDs include this uid on either side)
+  const friendsSnap = await getDocs(query(collection(db, 'friends'), where('users', 'array-contains', uid)));
+  await Promise.all(friendsSnap.docs.map(d => deleteDoc(d.ref)));
+
+  // 3. Pending friend requests in either direction
+  const reqsTo = await getDocs(query(collection(db, 'friendRequests'), where('toUid', '==', uid)));
+  const reqsFrom = await getDocs(query(collection(db, 'friendRequests'), where('fromUid', '==', uid)));
+  await Promise.all([...reqsTo.docs, ...reqsFrom.docs].map(d => deleteDoc(d.ref)));
+
+  // 4. Group memberships — leave each group; if user was last member, delete the group
+  const groupsSnap = await getDocs(query(collection(db, 'groups'), where('memberIds', 'array-contains', uid)));
+  await Promise.all(
+    groupsSnap.docs.map(async d => {
+      const data = d.data() as Group;
+      const remaining = (data.memberIds || []).filter(m => m !== uid);
+      if (remaining.length === 0) {
+        await deleteDoc(d.ref);
+      } else {
+        await updateDoc(d.ref, {memberIds: arrayRemove(uid)});
+      }
+    }),
+  );
+
+  // 5. Alerts the user sent
+  const alertsSnap = await getDocs(query(collection(db, 'alerts'), where('fromUid', '==', uid)));
+  await Promise.all(alertsSnap.docs.map(d => deleteDoc(d.ref)));
+
+  // 6. The user profile doc itself
+  await deleteDoc(doc(db, 'users', uid));
+
+  // 7. Finally, delete the Firebase auth user. Throws auth/requires-recent-login if stale.
+  await deleteUser(user);
+}
+
 // Safety alert
-export async function sendSafetyAlert(userId: string, username: string, bac: number) {
+export async function sendSafetyAlert(userId: string, username: string) {
   const q = query(collection(db, 'friends'), where('users', 'array-contains', userId));
   const friendsSnap = await getDocs(q);
 
@@ -331,7 +378,6 @@ export async function sendSafetyAlert(userId: string, username: string, bac: num
   return addDoc(collection(db, 'alerts'), {
     fromUid: userId,
     fromUsername: username,
-    bac,
     recipientUids: friendUids,
     timestamp: Date.now(),
     type: 'safety',

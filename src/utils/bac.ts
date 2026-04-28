@@ -1,32 +1,19 @@
-// Widmark formula BAC calculation
-// Widmark r: Male = 0.68, Female = 0.55
-// Higher body fat = lower r (fat is avascular, absorbs less alcohol)
-// One standard drink = 14g pure alcohol = 0.6 oz pure alcohol
-const METABOLISM_RATE = 0.015; // BAC reduction per hour
+// One standard drink = 14g pure alcohol = 0.6 oz pure alcohol (US definition)
+// We use this as a unit for tracking session intensity — it is NOT a BAC estimate.
 
-export function calculateBAC(
+export type IntensityLevel = 'none' | 'light' | 'moderate' | 'heavy' | 'excessive';
+
+export function getSessionIntensity(
   standardDrinks: number,
-  weightLbs: number,
-  gender: 'Male' | 'Female' | 'Other',
   hoursSinceFirstDrink: number,
-): number {
-  if (standardDrinks === 0) return 0;
-  const weightGrams = weightLbs * 453.592;
-  const alcoholGrams = standardDrinks * 14;
-  const r = gender === 'Female' ? 0.55 : 0.68;
-  const bac = alcoholGrams / (weightGrams * r) - METABOLISM_RATE * hoursSinceFirstDrink;
-  return Math.max(0, bac);
-}
-
-export function getBACStatus(bac: number): {label: string; emoji: string; color: string} {
-  if (bac === 0) return {label: 'Sober', emoji: '😎', color: '#4a6'};
-  if (bac < 0.03) return {label: 'Barely Feeling It', emoji: '🙂', color: '#5a8a5a'};
-  if (bac < 0.06) return {label: 'Feeling Good', emoji: '😊', color: '#8a9a4a'};
-  if (bac < 0.08) return {label: 'Buzzed', emoji: '😄', color: '#c9a96e'};
-  if (bac < 0.12) return {label: 'Tipsy', emoji: '🥳', color: '#b87333'};
-  if (bac < 0.15) return {label: 'Drunk', emoji: '🥴', color: '#a05020'};
-  if (bac < 0.20) return {label: 'Very Drunk', emoji: '😵', color: '#8b3030'};
-  return {label: 'Danger Zone', emoji: '🚨', color: '#8b2020'};
+): {level: IntensityLevel; label: string; color: string} {
+  if (standardDrinks === 0) return {level: 'none', label: 'No drinks tonight', color: '#4a6'};
+  const perHour = hoursSinceFirstDrink > 0 ? standardDrinks / hoursSinceFirstDrink : standardDrinks;
+  if (standardDrinks < 1) return {level: 'light', label: 'Light pace', color: '#5a8a5a'};
+  if (perHour < 1) return {level: 'light', label: 'Steady pace', color: '#8a9a4a'};
+  if (perHour < 1.5) return {level: 'moderate', label: 'Moderate pace', color: '#c9a96e'};
+  if (perHour < 2.5) return {level: 'heavy', label: 'Fast pace', color: '#b87333'};
+  return {level: 'excessive', label: 'Very fast pace', color: '#8b2020'};
 }
 
 // Calorie & ABV data from USDA FoodData Central + brand nutrition labels

@@ -11,10 +11,8 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {onTonightsDrinks, onUserProfileChange, logDrink, logCustomDrink, removeDrink, getDrinkHistory, getCurrentUser} from '../services/firebase';
 import type {DrinkSession} from '../services/firebase';
-import {calculateBAC, getBACStatus, DRINK_PRESETS, DrinkType} from '../utils/bac';
+import {DRINK_PRESETS, DrinkType, getSessionIntensity} from '../utils/bac';
 import {timeAgo} from '../utils/helpers';
-import BACGauge from '../components/BACGauge';
-import BACTimeline from '../components/BACTimeline';
 import SafeRidePrompt from '../components/SafeRidePrompt';
 import {getDrinkPrice} from '../utils/prices';
 import {getFavorites, toggleFavorite} from '../utils/favorites';
@@ -54,10 +52,7 @@ export default function TrackScreen() {
   const totalCalories = drinks.reduce((sum, d) => sum + d.calories, 0);
   const firstDrinkTime = drinks.length > 0 ? drinks[drinks.length - 1].timestamp : Date.now();
   const hoursSinceFirst = (Date.now() - firstDrinkTime) / (1000 * 60 * 60);
-  const bac = profile
-    ? calculateBAC(totalStandardDrinks, profile.weight, profile.gender, hoursSinceFirst)
-    : 0;
-  const bacStatus = getBACStatus(bac);
+  const intensity = getSessionIntensity(totalStandardDrinks, hoursSinceFirst);
   const totalSpent = drinks.reduce((sum, d) => sum + getDrinkPrice(d.type), 0);
 
   const refreshHistory = () => {
@@ -143,18 +138,20 @@ export default function TrackScreen() {
         </View>
       </View>
 
-      {/* BAC Gauge Card */}
+      {/* Tonight Card */}
       <View style={s.card}>
         <View style={s.gaugeContainer}>
-          <BACGauge bac={bac} size={170} />
+          <Text style={s.heroCount}>{drinks.length}</Text>
+          <Text style={s.heroCountLabel}>{drinks.length === 1 ? 'DRINK' : 'DRINKS'} TONIGHT</Text>
+          <Text style={[s.heroIntensity, {color: intensity.color}]}>{intensity.label}</Text>
         </View>
 
         <View style={s.divider} />
 
         <View style={s.statsRow}>
           <View style={s.statItem}>
-            <Text style={s.statValue}>{drinks.length}</Text>
-            <Text style={s.statLabel}>Drinks</Text>
+            <Text style={s.statValue}>{totalStandardDrinks.toFixed(1)}</Text>
+            <Text style={s.statLabel}>Std Drinks</Text>
           </View>
           <View style={s.statDivider} />
           <View style={s.statItem}>
@@ -177,29 +174,10 @@ export default function TrackScreen() {
             </View>
           </>
         )}
-
-        <View style={s.divider} />
-
-        <View style={s.scaleRow}>
-          {['Sober', 'Buzzed', 'Tipsy', 'Drunk', 'Danger'].map((label, i) => (
-            <View key={label} style={s.scaleItem}>
-              <View style={[s.scaleDot, {backgroundColor: ['#4a6', '#c9a96e', '#b87333', '#a05020', '#8b2020'][i]}]} />
-              <Text style={s.scaleLabel}>{label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* BAC Projection */}
-        {bac > 0 && (
-          <>
-            <View style={s.divider} />
-            <BACTimeline currentBAC={bac} />
-          </>
-        )}
       </View>
 
       {/* Safe Ride */}
-      <SafeRidePrompt bac={bac} />
+      <SafeRidePrompt drinkCount={drinks.length} />
 
       {/* Pacing Alert */}
       {pacingStatus === 'Fast' && (
@@ -257,7 +235,7 @@ export default function TrackScreen() {
 
       {/* Smart Recommendation */}
       {(() => {
-        const rec = getSmartRecommendation(bac, totalCalories, drinks.length, drinksPerHour);
+        const rec = getSmartRecommendation(totalCalories, drinks.length, drinksPerHour);
         if (!rec) return null;
         const preset = DRINK_PRESETS[rec.type];
         return (
@@ -349,7 +327,7 @@ export default function TrackScreen() {
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 14}}>
           <Text style={s.sectionCount}>{drinks.length} drinks · {totalCalories} cal</Text>
           {drinks.length > 0 && (
-            <TouchableOpacity onPress={() => shareSession(drinks, bac, totalCalories)}>
+            <TouchableOpacity onPress={() => shareSession(drinks, totalCalories)}>
               <Text style={s.shareBtn}>Share</Text>
             </TouchableOpacity>
           )}
@@ -424,7 +402,7 @@ export default function TrackScreen() {
 
       {/* Hangover Prediction */}
       {drinks.length >= 2 && (() => {
-        const prediction = predictHangover(drinks, bac, waterCount, hoursSinceFirst);
+        const prediction = predictHangover(drinks, waterCount, hoursSinceFirst);
         if (prediction.score === 0) return null;
         const riskColors = {low: '#4a6', moderate: '#c9a96e', high: '#b87333', severe: '#8b2020'};
         return (
@@ -527,62 +505,10 @@ export default function TrackScreen() {
         </View>
       )}
 
-      {/* BAC Reference */}
-      <View style={[s.sectionHeader, {marginTop: 32}]}>
-        <Text style={s.sectionLabel}>BAC REFERENCE</Text>
-      </View>
-      <View style={s.refCard}>
-        {/* Personal limit callout */}
-        {profile && profile.weight > 0 && (() => {
-          const w = profile.weight;
-          const g = profile.gender;
-          // Find how many drinks to reach 0.08 for this person
-          let limitDrinks = 0;
-          for (let d = 1; d <= 10; d++) {
-            const testBAC = calculateBAC(d, w, g, 1);
-            if (testBAC >= 0.08) { limitDrinks = d; break; }
-          }
-          if (limitDrinks === 0) limitDrinks = 10;
-          return (
-            <View style={s.personalLimit}>
-              <Text style={s.personalLimitTitle}>Your limit</Text>
-              <Text style={s.personalLimitValue}>
-                ~{limitDrinks - 1}-{limitDrinks} drinks in 1 hour
-              </Text>
-              <Text style={s.personalLimitSub}>
-                to stay under 0.08 BAC at {w} lbs ({g})
-              </Text>
-            </View>
-          );
-        })()}
-
-        <Text style={s.refTitle}>General reference table</Text>
-        <Text style={s.refSubtitle}>Drinks to reach 0.08 over 1 hour</Text>
-        {[
-          {weight: '120 lbs', male: '2-3', female: '1-2'},
-          {weight: '140 lbs', male: '3', female: '2'},
-          {weight: '160 lbs', male: '3-4', female: '2-3'},
-          {weight: '180 lbs', male: '4', female: '3'},
-          {weight: '200 lbs', male: '4-5', female: '3-4'},
-          {weight: '220 lbs', male: '5', female: '4'},
-        ].map((row, i) => (
-          <View key={row.weight} style={[s.refRow, i > 0 && s.listItemBorder]}>
-            <Text style={s.refWeight}>{row.weight}</Text>
-            <Text style={s.refValue}>{row.male} ♂</Text>
-            <Text style={s.refValue}>{row.female} ♀</Text>
-          </View>
-        ))}
-        <Text style={s.refNote}>
-          Based on Widmark formula (r=0.68 male, r=0.55 female).{'\n'}
-          Metabolism rate: ~0.015 BAC/hour.{'\n'}
-          Higher body fat % = higher BAC per drink.
-        </Text>
-      </View>
-
       <Text style={s.disclaimer}>
         1 standard drink = 14g pure alcohol (0.6 oz){'\n'}
-        BAC estimates are for informational purposes only.{'\n'}
-        Never drive under the influence.
+        Tipsy tracks drinks — it does not estimate sobriety.{'\n'}
+        Never drive after drinking.
       </Text>
     </ScrollView>
   );
@@ -598,7 +524,10 @@ const s = StyleSheet.create({
   liveText: {fontSize: 9, color: '#4a6', letterSpacing: 2, fontWeight: '500'},
 
   card: {backgroundColor: '#111116', borderRadius: 2, padding: 20, marginBottom: 28, borderWidth: 0.5, borderColor: '#1a1a1f'},
-  gaugeContainer: {alignItems: 'center', paddingVertical: 8},
+  gaugeContainer: {alignItems: 'center', paddingVertical: 16},
+  heroCount: {color: '#c9a96e', fontSize: 64, fontWeight: '200', letterSpacing: 1},
+  heroCountLabel: {color: '#555', fontSize: 10, letterSpacing: 4, marginTop: 4},
+  heroIntensity: {fontSize: 13, fontWeight: '400', letterSpacing: 1, marginTop: 12},
   divider: {height: 0.5, backgroundColor: '#1a1a1f', marginVertical: 16},
   statsRow: {flexDirection: 'row', alignItems: 'center'},
   statItem: {flex: 1, alignItems: 'center'},

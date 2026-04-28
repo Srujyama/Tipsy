@@ -9,11 +9,10 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {onTonightsDrinks, onUserProfileChange, onUserGroups, getLeaderboard, getDrinkHistory, getCurrentUser} from '../services/firebase';
 import type {DrinkSession} from '../services/firebase';
-import {calculateBAC, getBACStatus, DRINK_PRESETS} from '../utils/bac';
+import {DRINK_PRESETS, getSessionIntensity} from '../utils/bac';
 import {getDrinkPrice} from '../utils/prices';
 import {getDrinkOfDay} from '../utils/drinkOfDay';
 import {getGreeting, getInitials} from '../utils/helpers';
-import BACGauge from '../components/BACGauge';
 import SafeRidePrompt from '../components/SafeRidePrompt';
 import WeeklyChart from '../components/WeeklyChart';
 import {UserProfile, DrinkLog, Group} from '../types';
@@ -90,39 +89,26 @@ export default function HomeScreen({navigation}: any) {
   const totalStandardDrinks = drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
   const firstDrinkTime = drinks.length > 0 ? drinks[drinks.length - 1].timestamp : Date.now();
   const hoursSinceFirst = (Date.now() - firstDrinkTime) / (1000 * 60 * 60);
-  const bac = profile
-    ? calculateBAC(totalStandardDrinks, profile.weight, profile.gender, hoursSinceFirst)
-    : 0;
-  const bacStatus = getBACStatus(bac);
-
-  // Time to sober: BAC / metabolism rate (0.015 per hour)
-  const hoursToSober = bac > 0 ? Math.ceil(bac / 0.015 * 10) / 10 : 0;
-  const soberTime = bac > 0
-    ? (() => {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + hoursToSober * 60);
-        return now.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
-      })()
-    : '';
+  const intensity = getSessionIntensity(totalStandardDrinks, hoursSinceFirst);
+  const drinksPerHour = hoursSinceFirst > 0 ? drinks.length / hoursSinceFirst : drinks.length;
 
   const totalCalories = drinks.reduce((sum, d) => sum + d.calories, 0);
 
   const facts = [
     'Hydrate between drinks — your future self will thank you.',
     'Eat something before drinking to slow alcohol absorption by up to 50%.',
-    'One standard drink per hour is a good pace — your liver can process about 0.015 BAC/hr.',
-    'Muscle tissue absorbs alcohol faster than fat. Higher body fat = higher BAC per drink.',
-    'A 120 lb woman reaches legal limit (0.08) with just 1-2 drinks in an hour.',
-    'Carbonated mixers (soda, sparkling) speed up alcohol absorption.',
+    'One standard drink per hour is a steady pace your liver can keep up with.',
     'A Long Island Iced Tea contains ~3 standard drinks — same as 3 beers.',
-    'Your body starts metabolizing alcohol within minutes, but peak BAC occurs 30-90 min after drinking.',
     'Dehydration makes hangovers worse — alcohol inhibits antidiuretic hormone (ADH).',
     'A Piña Colada has 490 calories — almost as much as a Big Mac (563 cal).',
-    'Women produce less alcohol dehydrogenase enzyme, metabolizing alcohol slower than men.',
-    'Drinking on an empty stomach can double your peak BAC compared to drinking after a meal.',
     'Dark liquors (bourbon, red wine) have more congeners, which worsen hangovers.',
     'An IPA at 6.5% has 30% more alcohol than a light beer at 4.2%.',
     'The "beer before liquor" rule is a myth — total alcohol consumed matters, not order.',
+    'Carbonated mixers (soda, sparkling) speed up alcohol absorption.',
+    'Eating a full meal before drinking can cut peak intoxication roughly in half.',
+    'A standard cocktail can pack 200–500 calories without the satiety of food.',
+    'Light beer averages around 100 calories per 12 oz; craft IPAs can be 200+.',
+    'Your liver processes about one standard drink per hour — pace matters.',
   ];
   const fact = facts[Math.floor(Date.now() / 3600000) % facts.length];
 
@@ -131,26 +117,31 @@ export default function HomeScreen({navigation}: any) {
       <Text style={s.greeting}>{getGreeting()}</Text>
       <Text style={s.username}>{profile?.username || 'User'}</Text>
 
-      {/* BAC Card */}
+      {/* Tonight Card */}
       <View style={s.card}>
         <View style={s.cardHeader}>
-          <Text style={s.cardLabel}>YOUR BAC</Text>
+          <Text style={s.cardLabel}>TONIGHT</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Track')}>
             <Text style={s.linkText}>Track</Text>
           </TouchableOpacity>
         </View>
-        <View style={s.bacContainer}>
-          <BACGauge bac={bac} size={160} />
+        <View style={s.tonightHero}>
+          <Text style={s.tonightCount}>{drinks.length}</Text>
+          <Text style={s.tonightCountLabel}>{drinks.length === 1 ? 'DRINK' : 'DRINKS'}</Text>
         </View>
         <View style={s.statusRow}>
           <View>
-            <Text style={s.statusLabel}>{bacStatus.label}</Text>
-            <Text style={s.statusSub}>{bacStatus.emoji} {bac > 0 ? `Sober by ${soberTime}` : 'Ready to go'}</Text>
+            <Text style={[s.statusLabel, {color: intensity.color}]}>{intensity.label}</Text>
+            <Text style={s.statusSub}>
+              {drinks.length === 0 ? 'Ready to go' : `${drinksPerHour.toFixed(1)} drinks/hr`}
+            </Text>
           </View>
-          <View style={s.drinkCountBox}>
-            <Text style={s.drinkCountNum}>{drinks.length}</Text>
-            <Text style={s.drinkCountLabel}>TONIGHT</Text>
-          </View>
+          {drinks.length > 0 && (
+            <View style={s.drinkCountBox}>
+              <Text style={s.drinkCountNum}>{totalStandardDrinks.toFixed(1)}</Text>
+              <Text style={s.drinkCountLabel}>STD DRINKS</Text>
+            </View>
+          )}
         </View>
         {drinks.length > 0 && (
           <>
@@ -161,22 +152,20 @@ export default function HomeScreen({navigation}: any) {
                 <Text style={s.miniStatLabel}>cal</Text>
               </View>
               <View style={s.miniStat}>
-                <Text style={s.miniStatValue}>{totalStandardDrinks.toFixed(1)}</Text>
-                <Text style={s.miniStatLabel}>std drinks</Text>
+                <Text style={s.miniStatValue}>{hoursSinceFirst.toFixed(1)}h</Text>
+                <Text style={s.miniStatLabel}>session</Text>
               </View>
-              {hoursToSober > 0 && (
-                <View style={s.miniStat}>
-                  <Text style={s.miniStatValue}>{hoursToSober}h</Text>
-                  <Text style={s.miniStatLabel}>to sober</Text>
-                </View>
-              )}
+              <View style={s.miniStat}>
+                <Text style={s.miniStatValue}>{drinksPerHour.toFixed(1)}</Text>
+                <Text style={s.miniStatLabel}>per hour</Text>
+              </View>
             </View>
           </>
         )}
       </View>
 
       {/* Safe Ride Prompt */}
-      <SafeRidePrompt bac={bac} />
+      <SafeRidePrompt drinkCount={drinks.length} />
 
       {/* Sober Streak */}
       {soberDays > 0 && drinks.length === 0 && (
@@ -322,8 +311,8 @@ export default function HomeScreen({navigation}: any) {
       </View>
 
       <Text style={s.disclaimer}>
-        BAC estimates are for informational purposes only.{'\n'}
-        Never drive under the influence.
+        Tipsy is a tracking tool, not a sobriety meter.{'\n'}
+        Never drive after drinking.
       </Text>
     </ScrollView>
   );
@@ -338,7 +327,9 @@ const s = StyleSheet.create({
   cardHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16},
   cardLabel: {fontSize: 10, fontWeight: '500', color: '#555', letterSpacing: 3},
   linkText: {color: '#c9a96e', fontSize: 12, letterSpacing: 1},
-  bacContainer: {alignItems: 'center', marginVertical: 8},
+  tonightHero: {alignItems: 'center', marginVertical: 16},
+  tonightCount: {color: '#c9a96e', fontSize: 64, fontWeight: '200', letterSpacing: 1},
+  tonightCountLabel: {color: '#555', fontSize: 10, letterSpacing: 4, marginTop: 4},
   statusRow: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, paddingTop: 16, borderTopWidth: 0.5, borderTopColor: '#1a1a1f'},
   statusLabel: {color: '#f5f0eb', fontSize: 16, fontWeight: '300', letterSpacing: 0.5},
   statusSub: {color: '#555', fontSize: 13, marginTop: 2},

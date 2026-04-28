@@ -22,30 +22,30 @@ export default function PrivacyPolicyScreen() {
         <Text style={s.meta}>LAST UPDATED · APRIL 16, 2026</Text>
 
         <Text style={s.body}>
-          Tipsy is a drink-tracking app that helps you log drinks, estimate blood-alcohol
-          content (BAC), and share progress with friends. This policy explains what we
-          collect, why, and who we share it with.
+          Tipsy is a drink-tracking app that helps you log drinks, watch calories
+          and spending, pace your night, and share progress with friends. This
+          policy explains what we collect, why, and who we share it with.
         </Text>
 
         <Text style={s.sectionHeader}>1. INFORMATION WE COLLECT</Text>
         <Text style={s.body}>When you create an account, we collect:</Text>
         <Text style={s.bullet}>· Email address (for sign-in)</Text>
         <Text style={s.bullet}>· Username and name (shown to friends)</Text>
-        <Text style={s.bullet}>· Age, weight, and gender (used only to estimate BAC — the math requires them)</Text>
+        <Text style={s.bullet}>· Age, weight, and gender (used to confirm eligibility and personalize tips)</Text>
         <Text style={[s.body, {marginTop: 12}]}>While you use the app, we store:</Text>
         <Text style={s.bullet}>· Drinks you log — type, size, alcohol content, calories, and timestamp</Text>
         <Text style={s.bullet}>· Friends and groups — who you've connected with and joined</Text>
-        <Text style={s.bullet}>· Safety alerts — notifications sent to friends when your estimated BAC crosses a threshold you set</Text>
+        <Text style={s.bullet}>· Safety alerts — manual notifications you choose to send to friends</Text>
         <Text style={[s.body, {marginTop: 12}]}>
           We do not collect: location, contacts, photos, microphone, camera, browsing activity,
           or advertising identifiers.
         </Text>
 
         <Text style={s.sectionHeader}>2. HOW WE USE YOUR INFORMATION</Text>
-        <Text style={s.bullet}>· Calculate your estimated BAC</Text>
-        <Text style={s.bullet}>· Show your drink history, streaks, and progress</Text>
+        <Text style={s.bullet}>· Show your drink history, streaks, calories, and spending</Text>
+        <Text style={s.bullet}>· Pace alerts and hangover-risk tips based on your logged drinks</Text>
         <Text style={s.bullet}>· Let you share drink counts and safety alerts with friends you've added</Text>
-        <Text style={s.bullet}>· Suggest ride-share apps (Uber, Lyft) when BAC is elevated — these are plain app links; we do not send your data to them</Text>
+        <Text style={s.bullet}>· Surface ride-share apps (Uber, Lyft) — these are plain app links; we do not send your data to them</Text>
         <Text style={[s.body, {marginTop: 12}]}>
           We do not sell your data, use it for advertising, or share it with advertisers.
         </Text>
@@ -55,20 +55,22 @@ export default function PrivacyPolicyScreen() {
         <Text style={s.bullet}>· Friends and group members — can see your username, real name, and aggregate drink counts (daily/weekly/monthly totals). They cannot see the details of individual drinks.</Text>
         <Text style={s.bullet}>· Google Firebase — our backend provider, which stores the data on our behalf</Text>
         <Text style={s.bullet}>· Google Sign-In — if you use it, Google provides us your display name and email</Text>
+        <Text style={s.bullet}>· Sign in with Apple — if you use it, Apple provides us a unique ID and (optionally) a private relay email</Text>
         <Text style={[s.body, {marginTop: 12}]}>
           We do not use Firebase Analytics or Firebase Ads; both are disabled.
         </Text>
 
         <Text style={s.sectionHeader}>4. DATA RETENTION</Text>
         <Text style={s.body}>
-          We keep your data for as long as your account is active. If you delete your
-          account, we delete your profile, drinks, friends, and groups. Email us to
-          request deletion.
+          We keep your data for as long as your account is active. You can delete
+          your account at any time from Settings → Delete Account. We immediately
+          remove your profile, drinks, friend connections, group memberships, and
+          alerts. You can also email us to request deletion.
         </Text>
 
         <Text style={s.sectionHeader}>5. YOUR RIGHTS</Text>
         <Text style={s.bullet}>· View and edit your profile, drinks, and friends directly in the app</Text>
-        <Text style={s.bullet}>· Delete your account by emailing us</Text>
+        <Text style={s.bullet}>· Delete your account in-app from Settings → Delete Account</Text>
         <Text style={s.bullet}>· Request a copy of your data by emailing us</Text>
         <Text style={[s.body, {marginTop: 12}]}>
           If you live in the EU, UK, or California, you have additional rights under GDPR,

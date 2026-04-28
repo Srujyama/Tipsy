@@ -68,8 +68,8 @@ export default function OnboardingScreen({onComplete}: {onComplete: () => void})
             <Text style={styles.stepLabel}>STEP 1 OF 3</Text>
             <Text style={styles.stepTitle}>How old are you?</Text>
             <Text style={styles.stepSubtitle}>
-              Alcohol metabolism changes with age.{'\n'}
-              Younger bodies process alcohol faster.
+              You must be of legal drinking age to use Tipsy.{'\n'}
+              We use age only to confirm eligibility.
             </Text>
             <TextInput
               style={styles.largeInput}
@@ -96,8 +96,8 @@ export default function OnboardingScreen({onComplete}: {onComplete: () => void})
             <Text style={styles.stepLabel}>STEP 2 OF 3</Text>
             <Text style={styles.stepTitle}>What's your weight?</Text>
             <Text style={styles.stepSubtitle}>
-              A 120 lb person reaches 0.08 BAC with just 2 drinks.{'\n'}
-              A 200 lb person needs 4-5 for the same effect.
+              We use weight only to scale standard-drink and calorie figures{'\n'}
+              shown in the app. Your weight stays on your device + Firestore.
             </Text>
             <TextInput
               style={styles.largeInput}
@@ -131,8 +131,8 @@ export default function OnboardingScreen({onComplete}: {onComplete: () => void})
             <Text style={styles.stepLabel}>STEP 3 OF 3</Text>
             <Text style={styles.stepTitle}>What's your gender?</Text>
             <Text style={styles.stepSubtitle}>
-              Women have less alcohol dehydrogenase enzyme{'\n'}
-              and higher body fat %, leading to ~30% higher BAC.
+              Used only to personalize tips and educational content.{'\n'}
+              You can pick "Other" or change this later.
             </Text>
             <View style={styles.genderGrid}>
               {genderOptions.map(opt => (

@@ -4,7 +4,6 @@
 // - Dehydration studies (ADH inhibition)
 
 import {DrinkLog} from '../types';
-import {DRINK_PRESETS, DrinkType} from './bac';
 
 interface HangoverPrediction {
   risk: 'low' | 'moderate' | 'high' | 'severe';
@@ -16,7 +15,6 @@ interface HangoverPrediction {
 
 export function predictHangover(
   drinks: DrinkLog[],
-  bac: number,
   waterCount: number,
   hoursSinceFirst: number,
 ): HangoverPrediction {
@@ -28,12 +26,9 @@ export function predictHangover(
 
   // Factor 1: Total alcohol (biggest factor)
   const totalStdDrinks = drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
-  score += Math.min(40, totalStdDrinks * 8);
+  score += Math.min(50, totalStdDrinks * 10);
 
-  // Factor 2: Current BAC
-  score += Math.min(20, bac * 200);
-
-  // Factor 3: Drinking speed (drinks per hour)
+  // Factor 2: Drinking speed (drinks per hour)
   const pace = hoursSinceFirst > 0 ? drinks.length / hoursSinceFirst : drinks.length;
   if (pace > 3) score += 15;
   else if (pace > 2) score += 8;
