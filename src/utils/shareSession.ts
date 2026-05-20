@@ -1,6 +1,6 @@
 import {Share} from 'react-native';
 import {DrinkLog} from '../types';
-import {DRINK_PRESETS, DrinkType} from './bac';
+import {DRINK_PRESETS, DrinkType} from './drinks';
 import {getDrinkPrice} from './prices';
 
 export async function shareSession(

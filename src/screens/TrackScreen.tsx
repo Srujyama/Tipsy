@@ -11,7 +11,7 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {onTonightsDrinks, onUserProfileChange, logDrink, logCustomDrink, removeDrink, getDrinkHistory, getCurrentUser} from '../services/firebase';
 import type {DrinkSession} from '../services/firebase';
-import {DRINK_PRESETS, DrinkType, getSessionIntensity} from '../utils/bac';
+import {DRINK_PRESETS, DrinkType, getSessionIntensity} from '../utils/drinks';
 import {timeAgo} from '../utils/helpers';
 import SafeRidePrompt from '../components/SafeRidePrompt';
 import {getDrinkPrice} from '../utils/prices';

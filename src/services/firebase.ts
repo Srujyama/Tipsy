@@ -26,7 +26,7 @@ import {
 } from 'firebase/firestore';
 import {UserProfile, DrinkLog, Group, FriendRequest} from '../types';
 import {generateInviteCode} from '../utils/helpers';
-import {getStandardDrinks, getDrinkCalories, DRINK_PRESETS} from '../utils/bac';
+import {getStandardDrinks, getDrinkCalories, DRINK_PRESETS} from '../utils/drinks';
 
 export interface DrinkSession {
   date: string; // 'YYYY-MM-DD'

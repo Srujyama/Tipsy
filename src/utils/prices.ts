@@ -1,7 +1,7 @@
 // Average bar/restaurant drink prices (USD) - US national averages 2024-2025
 // Sources: BLS, Numbeo, Beverage Industry reports
 
-import {DrinkType} from './bac';
+import {DrinkType} from './drinks';
 
 const DRINK_PRICES: Record<DrinkType, number> = {
   // Light beers

@@ -300,16 +300,6 @@ const s = StyleSheet.create({
   achieveTitleLocked: {color: '#555'},
   achieveDesc: {color: '#444', fontSize: 10, lineHeight: 14},
 
-  bacSubtitle: {color: '#444', fontSize: 11, marginBottom: 16},
-  bacTableHeader: {flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#1a1a1f', paddingBottom: 10, marginBottom: 4},
-  bacTableHeaderText: {color: '#555', fontSize: 10, letterSpacing: 1, fontWeight: '500'},
-  bacTableRow: {flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#0e0e14'},
-  bacTableCell: {flex: 1, fontSize: 12, fontWeight: '300', color: '#888'},
-  bacLegend: {flexDirection: 'row', gap: 16, marginTop: 14},
-  bacLegendItem: {flexDirection: 'row', alignItems: 'center', gap: 6},
-  bacLegendDot: {width: 6, height: 6, borderRadius: 3},
-  bacLegendText: {color: '#555', fontSize: 10, letterSpacing: 0.5},
-
   aboutText: {color: '#555', fontSize: 12, lineHeight: 18, fontWeight: '300'},
   versionText: {color: '#222', fontSize: 10, textAlign: 'center', marginTop: 32, letterSpacing: 2, marginBottom: 20},
   legalRow: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4},

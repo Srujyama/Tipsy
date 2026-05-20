@@ -9,7 +9,7 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {onTonightsDrinks, onUserProfileChange, onUserGroups, getLeaderboard, getDrinkHistory, getCurrentUser} from '../services/firebase';
 import type {DrinkSession} from '../services/firebase';
-import {DRINK_PRESETS, getSessionIntensity} from '../utils/bac';
+import {DRINK_PRESETS, getSessionIntensity} from '../utils/drinks';
 import {getDrinkPrice} from '../utils/prices';
 import {getDrinkOfDay} from '../utils/drinkOfDay';
 import {getGreeting, getInitials} from '../utils/helpers';

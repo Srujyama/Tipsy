@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {DrinkType} from './bac';
+import {DrinkType} from './drinks';
 
 const FAVORITES_KEY = '@tipsy_favorites';
 

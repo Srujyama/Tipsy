@@ -1,4 +1,4 @@
-import {DRINK_PRESETS, DrinkType} from './bac';
+import {DRINK_PRESETS, DrinkType} from './drinks';
 
 interface DrinkOfDay {
   type: DrinkType;
