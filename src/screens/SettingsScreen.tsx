@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
-import {onUserProfileChange, updateUserProfile, signOut, getDrinkHistory, getCurrentUser, deleteAccount} from '../services/firebase';
+import {onUserProfileChange, updateUserProfile, signOut, getDrinkHistory, getCurrentUser, deleteAccount, reauthenticate, getCurrentAuthProvider} from '../services/firebase';
 import {getInitials} from '../utils/helpers';
 import {getAchievements, Achievement} from '../utils/achievements';
 import {getDrinkGoal, setDrinkGoal, DrinkGoal} from '../utils/drinkGoal';
@@ -90,6 +90,53 @@ export default function SettingsScreen() {
     ]);
   };
 
+  // Tries delete; on auth/requires-recent-login, silently re-authenticates and retries.
+  // Apple/Google re-auth re-opens their native sign-in sheet briefly; email/password
+  // users get a one-line inline password prompt — no sign-out/sign-in round trip.
+  const performDelete = async (passwordIfNeeded?: string) => {
+    try {
+      await deleteAccount();
+    } catch (e: any) {
+      if (e.code !== 'auth/requires-recent-login') {
+        throw e;
+      }
+      const provider = getCurrentAuthProvider();
+      if (provider === 'password') {
+        if (!passwordIfNeeded) {
+          // Caller is expected to pass it on retry — see promptForPasswordAndDelete.
+          throw e;
+        }
+        await reauthenticate(passwordIfNeeded);
+      } else {
+        await reauthenticate();
+      }
+      await deleteAccount();
+    }
+  };
+
+  const promptForPasswordAndDelete = () => {
+    Alert.prompt(
+      'Confirm password',
+      'Enter your password to finish deleting your account.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async (pw?: string) => {
+            if (!pw) return;
+            try {
+              await performDelete(pw);
+            } catch (e: any) {
+              Alert.alert('', e.message || 'Could not delete account');
+            }
+          },
+        },
+      ],
+      'secure-text',
+    );
+  };
+
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
@@ -110,16 +157,14 @@ export default function SettingsScreen() {
                   style: 'destructive',
                   onPress: async () => {
                     try {
-                      await deleteAccount();
+                      await performDelete();
                     } catch (e: any) {
-                      if (e.code === 'auth/requires-recent-login') {
-                        Alert.alert(
-                          'Sign in again',
-                          'For your security, please sign out and sign back in, then try deleting your account again.',
-                        );
-                      } else {
-                        Alert.alert('', e.message || 'Could not delete account');
+                      if (e.code === 'auth/requires-recent-login' &&
+                          getCurrentAuthProvider() === 'password') {
+                        promptForPasswordAndDelete();
+                        return;
                       }
+                      Alert.alert('', e.message || 'Could not delete account');
                     }
                   },
                 },

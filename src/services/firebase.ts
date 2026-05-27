@@ -5,8 +5,15 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  OAuthProvider,
   User,
 } from 'firebase/auth';
+import {Platform} from 'react-native';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {appleAuth} from '@invertase/react-native-apple-authentication';
 import {
   doc,
   setDoc,
@@ -317,6 +324,56 @@ export async function getLeaderboard(
   }
 
   return results.sort((a, b) => b.drinkCount - a.drinkCount);
+}
+
+// Re-authenticate the current user. Required by Firebase before sensitive ops
+// (delete, change email/password) if the auth token is older than ~5 minutes.
+// Silent for Apple/Google (re-runs the OAuth flow); email/password requires
+// the caller to pass the password.
+export async function reauthenticate(password?: string): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not signed in');
+  const providerId = user.providerData[0]?.providerId;
+
+  if (providerId === 'password') {
+    if (!password) throw new Error('Password required');
+    const email = user.email;
+    if (!email) throw new Error('No email on account');
+    const cred = EmailAuthProvider.credential(email, password);
+    await reauthenticateWithCredential(user, cred);
+    return;
+  }
+
+  if (providerId === 'apple.com') {
+    if (Platform.OS !== 'ios') throw new Error('Apple sign-in is iOS-only');
+    const response = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.EMAIL],
+    });
+    if (!response.identityToken) throw new Error('Apple re-auth failed: no identity token');
+    const provider = new OAuthProvider('apple.com');
+    const cred = provider.credential({idToken: response.identityToken, rawNonce: response.nonce});
+    await reauthenticateWithCredential(user, cred);
+    return;
+  }
+
+  if (providerId === 'google.com') {
+    await GoogleSignin.hasPlayServices();
+    const response = await GoogleSignin.signIn();
+    const idToken = response.data?.idToken;
+    if (!idToken) throw new Error('Google re-auth failed: no ID token');
+    const cred = GoogleAuthProvider.credential(idToken);
+    await reauthenticateWithCredential(user, cred);
+    return;
+  }
+
+  throw new Error(`Unsupported auth provider: ${providerId}`);
+}
+
+// Returns 'password' | 'apple.com' | 'google.com' | undefined so callers can
+// decide whether they need to collect a password before calling deleteAccount.
+export function getCurrentAuthProvider(): string | undefined {
+  return auth.currentUser?.providerData[0]?.providerId;
 }
 
 // Account deletion: purge all user-owned data, then delete the Firebase auth user.

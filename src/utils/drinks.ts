@@ -8,7 +8,10 @@ export function getSessionIntensity(
   hoursSinceFirstDrink: number,
 ): {level: IntensityLevel; label: string; color: string} {
   if (standardDrinks === 0) return {level: 'none', label: 'No drinks tonight', color: '#4a6'};
-  const perHour = hoursSinceFirstDrink > 0 ? standardDrinks / hoursSinceFirstDrink : standardDrinks;
+  // Need a real time window before per-hour math is meaningful — otherwise a single drink
+  // just logged produces a divide-by-near-zero and falls into "Very fast pace".
+  if (hoursSinceFirstDrink < 0.25) return {level: 'light', label: 'Light pace', color: '#5a8a5a'};
+  const perHour = standardDrinks / hoursSinceFirstDrink;
   if (standardDrinks < 1) return {level: 'light', label: 'Light pace', color: '#5a8a5a'};
   if (perHour < 1) return {level: 'light', label: 'Steady pace', color: '#8a9a4a'};
   if (perHour < 1.5) return {level: 'moderate', label: 'Moderate pace', color: '#c9a96e'};

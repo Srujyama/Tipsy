@@ -14,6 +14,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.fromUid == request.auth.uid;
       allow update: if request.auth != null && resource.data.toUid == request.auth.uid;
+      // Either side of a request can delete it (recipient declining, sender canceling, or account deletion).
+      allow delete: if request.auth != null && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid
+      );
     }
     match /friends/{friendId} {
       allow read: if request.auth != null;
@@ -27,10 +32,14 @@ service cloud.firestore {
         (request.resource.data.memberIds.hasAll(resource.data.memberIds.concat([request.auth.uid])) &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds']))
       );
+      // A member can delete the group (used by account deletion when the user is the last member).
+      allow delete: if request.auth != null && request.auth.uid in resource.data.memberIds;
     }
     match /alerts/{alertId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
+      // The sender can delete their own alerts (used by account deletion).
+      allow delete: if request.auth != null && resource.data.fromUid == request.auth.uid;
     }
   }
 }

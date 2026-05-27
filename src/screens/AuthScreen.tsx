@@ -17,8 +17,8 @@ import {GoogleAuthProvider, OAuthProvider, signInWithCredential} from 'firebase/
 import {auth} from '../services/firebaseConfig';
 
 GoogleSignin.configure({
-  webClientId: '1036146163778-pa6hafaun24ied99idd8j4h7h28enibb.apps.googleusercontent.com',
-  iosClientId: '1036146163778-pa6hafaun24ied99idd8j4h7h28enibb.apps.googleusercontent.com',
+  webClientId: '1036146163778-tjr27dib46ca0tt5eubmoofac7t0dgm0.apps.googleusercontent.com',
+  iosClientId: '1036146163778-rv8408bgop2295jfekpsf7ei5il12o8b.apps.googleusercontent.com',
 });
 
 export default function AuthScreen() {

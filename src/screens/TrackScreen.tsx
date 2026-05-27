@@ -93,9 +93,11 @@ export default function TrackScreen() {
     }
   };
 
-  // Pacing: drinks per hour
-  const drinksPerHour = hoursSinceFirst > 0 ? drinks.length / hoursSinceFirst : drinks.length;
-  const pacingStatus = drinks.length === 0 ? '' : drinksPerHour > 3 ? 'Fast' : drinksPerHour > 1.5 ? 'Moderate' : 'Steady';
+  // Pacing: drinks per hour. Requires at least 15 min and 2+ drinks to be meaningful —
+  // a single drink just logged would otherwise divide by milliseconds.
+  const pacingValid = drinks.length >= 2 && hoursSinceFirst >= 0.25;
+  const drinksPerHour = pacingValid ? drinks.length / hoursSinceFirst : 0;
+  const pacingStatus = !pacingValid ? '' : drinksPerHour > 3 ? 'Fast' : drinksPerHour > 1.5 ? 'Moderate' : 'Steady';
   const pacingColor = drinksPerHour > 3 ? '#8b2020' : drinksPerHour > 1.5 ? '#c9a96e' : '#4a6';
 
   const handleToggleFavorite = async (type: DrinkType) => {

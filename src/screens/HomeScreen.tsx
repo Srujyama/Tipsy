@@ -90,7 +90,8 @@ export default function HomeScreen({navigation}: any) {
   const firstDrinkTime = drinks.length > 0 ? drinks[drinks.length - 1].timestamp : Date.now();
   const hoursSinceFirst = (Date.now() - firstDrinkTime) / (1000 * 60 * 60);
   const intensity = getSessionIntensity(totalStandardDrinks, hoursSinceFirst);
-  const drinksPerHour = hoursSinceFirst > 0 ? drinks.length / hoursSinceFirst : drinks.length;
+  const pacingValid = drinks.length >= 2 && hoursSinceFirst >= 0.25;
+  const drinksPerHour = pacingValid ? drinks.length / hoursSinceFirst : 0;
 
   const totalCalories = drinks.reduce((sum, d) => sum + d.calories, 0);
 
@@ -133,7 +134,11 @@ export default function HomeScreen({navigation}: any) {
           <View>
             <Text style={[s.statusLabel, {color: intensity.color}]}>{intensity.label}</Text>
             <Text style={s.statusSub}>
-              {drinks.length === 0 ? 'Ready to go' : `${drinksPerHour.toFixed(1)} drinks/hr`}
+              {drinks.length === 0
+                ? 'Ready to go'
+                : pacingValid
+                  ? `${drinksPerHour.toFixed(1)} drinks/hr`
+                  : 'Pacing — give it a few'}
             </Text>
           </View>
           {drinks.length > 0 && (

@@ -28,8 +28,11 @@ export function predictHangover(
   const totalStdDrinks = drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
   score += Math.min(50, totalStdDrinks * 10);
 
-  // Factor 2: Drinking speed (drinks per hour)
-  const pace = hoursSinceFirst > 0 ? drinks.length / hoursSinceFirst : drinks.length;
+  // Factor 2: Drinking speed (drinks per hour).
+  // Skip pace contribution when window is too short — a single fresh drink would
+  // otherwise produce an absurd per-hour value and over-score the hangover risk.
+  const paceValid = drinks.length >= 2 && hoursSinceFirst >= 0.25;
+  const pace = paceValid ? drinks.length / hoursSinceFirst : 0;
   if (pace > 3) score += 15;
   else if (pace > 2) score += 8;
 
